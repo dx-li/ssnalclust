@@ -92,7 +92,7 @@ class SSNAL:
         self.A = A
         self.d, N = A.shape
         self.n = weights_matrix.shape[0]
-        self.nz_r, self.nz_c = np.nonzero(np.triu(weights_matrix))
+        self.nz_r, self.nz_c, _ = scipy.sparse.find(scipy.sparse.triu(weights_matrix))
         # saves the non-regularized weights so we can adjust gamma later
         self.pre_weights = weights_matrix[self.nz_r, self.nz_c]
         self.gamma = gamma
