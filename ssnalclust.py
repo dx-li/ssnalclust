@@ -239,7 +239,7 @@ class SSNAL:
         Gradient of the Phi function used in the SSNCG subproblem.
         """
         proj = self.proxdual_pU(sigma * self.Bop._matmat(X) + Z, sigma)
-        return X - self.A + (1.0 / sigma) * self.Bop._adjoint(proj)
+        return X - self.A + self.Bop._adjoint(proj)
 
     @staticmethod
     def sigma_update(itera):
