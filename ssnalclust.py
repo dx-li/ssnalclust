@@ -150,10 +150,10 @@ class SSNAL:
         U : array-like
             Matrix.
         tau : float, optional
-            Proximal parameter.
+            Proximal parameter. Default is 1.0 if None.
         """
         weights = self.weights
-        upper = weights
+        upper = (tau if tau is not None else 1.0) * weights
         norms = column_norms(U)
         norms = np.maximum(norms, upper)
         return U * (upper / norms)
@@ -238,11 +238,8 @@ class SSNAL:
         r"""
         Gradient of the Phi function used in the SSNCG subproblem.
         """
-        return (
-            X
-            - self.A
-            + self.Bop._adjoint(self.proxdual_pU(sigma * self.Bop._matmat(X) + Z))
-        )
+        proj = self.proxdual_pU(sigma * self.Bop._matmat(X) + Z, sigma)
+        return X - self.A + self.Bop._adjoint(proj)
 
     @staticmethod
     def sigma_update(itera):
@@ -485,6 +482,7 @@ class SSNAL:
                 map_X_hat = map_X[:, zet_less_one]
                 rho = np.einsum("j, ij,ij->j", alpha, map_X_hat, D_sel)
                 map_X[:, zet_less_one] = map_X_hat * alpha - D_sel * rho
+                map_X[:, ~zet_less_one] = 0.0
                 return X + sigma * self.Bop._adjoint(map_X)
 
             cg_tolerance = norm_grad_phi_Xj ** (1 + tau)
