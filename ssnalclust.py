@@ -142,7 +142,7 @@ class SSNAL:
         norms = np.maximum(norms, upper)
         return U * (1 - upper / norms)
 
-    def proxdual_pU(self, U: ArrayLike, tau=None) -> ArrayLike:
+    def proxdual_pU(self, U: ArrayLike, tau=1.0) -> ArrayLike:
         r"""
         Proximal operator of the dual of pU.
         Parameters
@@ -150,10 +150,10 @@ class SSNAL:
         U : array-like
             Matrix.
         tau : float, optional
-            Proximal parameter.
+            Proximal parameter. Default is 1.0.
         """
         weights = self.weights
-        upper = weights
+        upper = tau * weights
         norms = column_norms(U)
         norms = np.maximum(norms, upper)
         return U * (upper / norms)
@@ -241,7 +241,7 @@ class SSNAL:
         return (
             X
             - self.A
-            + self.Bop._adjoint(self.proxdual_pU(sigma * self.Bop._matmat(X) + Z))
+            + self.Bop._adjoint(self.proxdual_pU(sigma * self.Bop._matmat(X) + Z, sigma))
         )
 
     @staticmethod
