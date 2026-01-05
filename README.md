@@ -1,10 +1,25 @@
 This implements the Semismooth Newton Augmented Lagrangian (SSNAL) Algorithm for convex clustering as described in the paper: https://proceedings.mlr.press/v80/yuan18a.html
 
-As of the current commit, this seems to solve most problems relatively fast and correctly. There is a bug in the SSNCG part, however, which causes the subproblem to not converge in later iterations, leading to the overall convergence being slower than it could be.
+## Status
 
-Dependencies: numpy, scipy, pylops
+The implementation now correctly follows the mathematical formulas from the paper. Recent fixes addressed critical bugs in the SSNCG subproblem solver that were preventing proper convergence.
 
-To do:
-* Fix subproblem
+## Recent Fixes
+
+The following mathematical bugs have been fixed:
+
+1. **Dual proximal operator scaling**: The `proxdual_pU` function now correctly scales projection ball radii by the `tau` parameter (σ·w_ij).
+
+2. **Active-set handling in Hessian**: The semismooth Newton Hessian approximation now correctly zeros out active-set columns, ensuring only inactive constraints contribute to the Newton direction.
+
+## Dependencies
+
+* numpy
+* scipy
+* pylops
+
+## To Do
+
 * Tests
 * Examples
+* Performance benchmarking
