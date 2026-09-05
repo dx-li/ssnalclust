@@ -1,12 +1,21 @@
 """Independent tests for generalized-loss convex clustering."""
 
+from decimal import Decimal, localcontext
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from scipy import sparse
 from scipy.special import expit
 
-from ssnalclust.generalized import _fidelity, _prox_fidelity, solve_generalized
+from ssnalclust.generalized import (
+    _certificate_dual,
+    _fidelity,
+    _generalized_diagnostics,
+    _log_mean_kl,
+    _prox_fidelity,
+    solve_generalized,
+)
 
 
 @pytest.mark.parametrize("loss", ["huber", "logistic", "poisson"])
@@ -41,6 +50,10 @@ def test_generalized_against_independent_cvxpy(loss, penalty, gamma):
     result = solve_generalized(x, w, gamma, loss, 0.7, penalty, tol=2e-7, max_iter=20000)
     assert result.converged
     assert result.kkt_residual <= 2e-7
+    assert result.relative_gap <= 2e-7
+    assert result.gap >= 0
+    assert result.dual_objective <= problem.value + 3e-7
+    assert_allclose(result.gap, result.objective - result.dual_objective, atol=1e-12, rtol=1e-5)
     assert_allclose(result.objective, problem.value, atol=3e-5, rtol=2e-6)
     # Huber centers need not be unique; the two likelihoods are strictly convex.
     if loss != "huber":
@@ -53,6 +66,155 @@ def test_generalized_against_independent_cvxpy(loss, penalty, gamma):
     assert_allclose(result.fitted_means, expected_means)
     assert len(result.history) == result.n_iter + 1
     assert np.isfinite(result.dual).all()
+
+
+@pytest.mark.parametrize("loss", ["huber", "logistic", "poisson"])
+@pytest.mark.parametrize("penalty", ["l1", "l2", "linf"])
+def test_loss_specific_dual_against_independent_cvxpy(loss, penalty):
+    cp = pytest.importorskip("cvxpy")
+    if loss == "huber":
+        x = np.array([[-1.0, 0.2], [0.7, 3.0], [2.0, -2.0]])
+    elif loss == "logistic":
+        x = np.array([[0.0, 0.2], [1.0, 0.7], [0.4, 1.0]])
+    else:
+        x = np.array([[0.0, 2.0], [3.0, 0.7], [1.0, 4.0]])
+    # Explicit independent incidence, avoiding package graph construction.
+    incidence = np.array([[1.0, -1.0, 0.0], [1.0, 0.0, -1.0], [0.0, 1.0, -1.0]])
+    z = cp.Variable((3, 2))
+    divergence = incidence.T @ z
+    dual_order = {"l1": np.inf, "l2": 2, "linf": 1}[penalty]
+    constraints = [cp.norm(z[e], dual_order) <= 0.3 for e in range(3)]
+    if loss == "huber":
+        constraints.append(cp.abs(divergence) <= 0.8)
+        objective = cp.sum(cp.multiply(x, divergence)) - 0.5 * cp.sum_squares(divergence)
+    elif loss == "logistic":
+        q = x - divergence
+        constraints += [q >= 0, q <= 1]
+        objective = cp.sum(cp.entr(q) + cp.entr(1 - q))
+    else:
+        q = x - divergence
+        constraints.append(q >= 0)
+        objective = cp.sum(q + cp.entr(q))
+    problem = cp.Problem(cp.Maximize(objective), constraints)
+    problem.solve(solver="CLARABEL", tol_gap_abs=1e-9, tol_gap_rel=1e-9, tol_feas=1e-9)
+    assert problem.status == cp.OPTIMAL
+    result = solve_generalized(
+        x, gamma=0.3, loss=loss, huber_delta=0.8, penalty=penalty, tol=1e-8, max_iter=20000
+    )
+    assert result.converged
+    assert result.relative_gap <= 1e-8
+    assert result.dual_objective <= problem.value + 1e-7
+    assert result.objective >= problem.value - 1e-7
+    assert_allclose(result.dual_objective, problem.value, atol=3e-7)
+    actual_s = incidence.T @ result.dual
+    assert np.all(np.linalg.norm(result.dual, ord=dual_order, axis=1) <= 0.3 + 1e-14)
+    if loss == "huber":
+        assert np.all(np.abs(actual_s) <= 0.8)
+        direct_dual = np.sum(x * actual_s) - 0.5 * np.sum(actual_s**2)
+    else:
+        actual_q = x - actual_s
+        assert np.all(actual_s <= x)
+        if loss == "logistic":
+            assert np.all(actual_s >= x - 1)
+
+        def xlogx(v):
+            active = v > 0
+            out = np.zeros_like(v)
+            out[active] = v[active] * np.log(v[active])
+            return out
+
+        direct_dual = (
+            -np.sum(xlogx(actual_q) + xlogx(1 - actual_q))
+            if loss == "logistic"
+            else np.sum(actual_q - xlogx(actual_q))
+        )
+    assert_allclose(result.dual_objective, direct_dual, atol=1e-12)
+    assert 0 <= result.dual_scale <= 1
+
+
+@pytest.mark.parametrize("loss", ["logistic", "poisson"])
+def test_boundary_wrong_sign_forces_valid_zero_dual(loss):
+    x = np.array([[0.0], [1.0]])
+    b = sparse.csr_matrix([[1.0, -1.0]])
+    repaired, divergence, scale = _certificate_dual(
+        x, b, np.array([[0.1]]), np.ones(1), loss, 1.0, "l2"
+    )
+    assert scale == 0
+    assert_allclose(repaired, 0)
+    assert_allclose(divergence, 0)
+    # Correct signs do not require the weak zero certificate.
+    _, divergence, scale = _certificate_dual(x, b, np.array([[-0.1]]), np.ones(1), loss, 1.0, "l2")
+    assert scale == 1
+    assert np.all(divergence <= x)
+
+
+@pytest.mark.parametrize("loss", ["huber", "logistic", "poisson"])
+def test_global_rescaling_enforces_fidelity_domain_on_returned_arrays(loss):
+    x = np.array([[0.2], [0.8]])
+    b = sparse.csr_matrix([[1.0, -1.0]])
+    repaired, divergence, scale = _certificate_dual(
+        x, b, np.array([[0.9]]), np.ones(1), loss, 0.3, "l2"
+    )
+    assert 0 < scale < 1
+    assert_allclose(divergence, b.T @ repaired)
+    if loss == "huber":
+        assert np.all(np.abs(divergence) <= 0.3)
+    elif loss == "logistic":
+        assert np.all((divergence <= x) & (divergence >= x - 1))
+    else:
+        assert np.all(divergence <= x)
+
+
+@pytest.mark.parametrize("loss", ["logistic", "poisson"])
+def test_small_likelihood_gradient_does_not_imply_small_gap(loss):
+    x = np.full((2, 1), 1e-8)
+    u = np.full_like(x, -1e8)
+    b = sparse.csr_matrix([[1.0, -1.0]])
+    status, _, _ = _generalized_diagnostics(x, u, np.zeros((1, 1)), b, np.ones(1), loss, 1.0, "l2")
+    assert status["kkt_residual"] < 1e-6
+    assert status["relative_gap"] > 0.5
+    assert status["gap"] > 1.9
+
+
+def test_huber_requires_gap_when_initial_edge_residual_is_small():
+    result = solve_generalized([[-1e8], [1e8]], loss="huber", gamma=0.5, tol=1e-6)
+    assert result.history[0]["kkt_residual"] < 1e-6
+    assert result.history[0]["relative_gap"] > 0.9
+    assert result.converged and result.n_iter > 0
+    assert result.relative_gap <= 1e-6
+
+
+def test_kl_gap_matches_high_precision_when_large_terms_cancel():
+    q = 1e6
+    mean = q + 1e-7
+    with localcontext() as context:
+        context.prec = 80
+        dq, dm = Decimal.from_float(q), Decimal.from_float(mean)
+        expected = float(dq * (dq / dm).ln() - dq + dm)
+    actual = _log_mean_kl(np.array([q]), np.array([mean]), np.log([mean]))[0]
+    assert actual > 0
+    assert_allclose(actual, expected, rtol=1e-14)
+
+
+def test_kl_gap_stays_finite_after_exponential_underflow():
+    q = np.array([1e-300])
+    actual = _log_mean_kl(q, np.zeros(1), np.array([-1000.0]))
+    assert_allclose(actual, q * (np.log(q) + 999.0), rtol=1e-14, atol=0.0)
+
+
+def test_logistic_tail_and_kl_preserve_subnormal_probabilities():
+    u = np.array([[-710.0]])
+    x = np.array([[1e-310]])
+    _, gradient, means = _fidelity(u, x, "logistic", 1.0)
+    expected_mean = np.exp(-710.0)
+    assert means[0, 0] > 0
+    assert_allclose(means[0, 0], expected_mean, rtol=1e-14, atol=0.0)
+    assert_allclose(gradient, expected_mean - x, rtol=1e-14, atol=0.0)
+    # Also repair a caller's prematurely underflowed sigmoid argument.
+    actual = _log_mean_kl(x, np.zeros_like(x), u)
+    expected = expected_mean + x * (np.log(x) - u - 1)
+    assert np.all(actual > 0)
+    assert_allclose(actual, expected, rtol=1e-13, atol=0.0)
 
 
 @pytest.mark.parametrize("loss", ["huber", "logistic", "poisson"])

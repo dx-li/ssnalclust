@@ -4,7 +4,10 @@ Every model uses samples in rows, finite nonnegative symmetric graph weights,
 and an explicit objective. The alternative solvers use primal-dual hybrid
 gradient (PDHG), with steps chosen from a bound on the stacked incidence
 operators. They report the actual primal objective and normalized KKT
-residuals. Their results do not contain a squared-loss duality gap.
+residuals. Structured quadratic models additionally report a primal-dual gap;
+generalized losses report a loss-specific conjugate gap after repairing dual
+feasibility. Both checks must pass for success. Missing-data results currently
+report KKT residuals only, without a dual-gap claim.
 
 Use the low-level functions for full diagnostic access, or the corresponding
 scikit-learn estimators for `fit`, `fit_predict` where applicable, and cloning.
@@ -133,6 +136,10 @@ checked. Each norm-ball dual is feasible by construction. Residuals are
 normalized to be scale-aware, and `tol` applies to their maximum. These are
 numerical first-order conditions for the specified convex objective; they
 are not universal bounds on centroid error for nonstrongly convex losses.
+See [structured certificates](structured_certificates.md) and
+[generalized certificates](generalized_certificates.md) for the additional
+feasible duals and stable gap calculations. Global scaling can yield a weak
+likelihood dual bound; a small KKT residual alone then does not imply success.
 
 ## References
 

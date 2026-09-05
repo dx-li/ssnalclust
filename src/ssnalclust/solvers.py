@@ -10,10 +10,8 @@ from dataclasses import dataclass
 from numbers import Integral, Real
 
 import numpy as np
-from scipy import sparse
-from scipy.sparse.linalg import LinearOperator, cg, factorized
+from scipy.sparse.linalg import LinearOperator, cg
 
-from .graph import graph_from_weights
 from .prox import penalty_value, project_dual, prox_norm
 
 
@@ -39,6 +37,17 @@ class SolverResult:
     converged: bool
     history: list
     message: str
+    strong_convexity: float = 1.0
+
+    @property
+    def center_error_bound(self):
+        """Frobenius centroid error bound from strong convexity and the gap.
+
+        In exact arithmetic ||U-U*||_F <= sqrt(2*gap/min(sample_weight)).
+        This is a numerical evaluation of that bound, not interval arithmetic.
+        A small relative gap can coexist with a large absolute error bound.
+        """
+        return float(np.sqrt(2.0) * np.sqrt(self.gap) / np.sqrt(self.strong_convexity))
 
 
 def _positive(value, name, allow_zero=False):
@@ -53,12 +62,19 @@ def _diagnostics(x, u, z, b, radii, penalty, mass):
     z = project_dual(z, radii, penalty)
     bt = b.T @ z
     differences = b @ u
-    primal = 0.5 * np.sum(mass * (u - x) ** 2) + penalty_value(differences, radii, penalty)
+    fusion = penalty_value(differences, radii, penalty)
+    primal = 0.5 * np.sum(mass * (u - x) ** 2) + fusion
     dual = np.sum(x * bt) - 0.5 * np.sum(bt**2 / mass)
     if not np.isfinite(primal) or not np.isfinite(dual):
         raise FloatingPointError("Objective overflowed; center or rescale X and weights")
-    gap = max(0.0, float(primal - dual))
-    stationarity = np.linalg.norm(mass * (u - x) + bt) / (
+    stationarity_vector = mass * (u - x) + bt
+    # Fenchel gaps avoid cancellation between large primal/dual objectives.
+    order = {"l1": 1, "l2": 2, "linf": np.inf}[penalty]
+    edge_norms = np.linalg.norm(differences, ord=order, axis=1)
+    slack = radii * edge_norms - np.sum(z * differences, axis=1)
+    scaled_stationarity = np.sqrt(mass) * (u - x) + bt / np.sqrt(mass)
+    gap = float(0.5 * np.sum(scaled_stationarity**2) + np.maximum(slack, 0).sum())
+    stationarity = np.linalg.norm(stationarity_vector) / (
         1 + np.linalg.norm(mass * (u - x)) + np.linalg.norm(bt)
     )
     residual = differences - prox_norm(differences + z, radii, penalty)
@@ -170,6 +186,8 @@ def solve(
     x0=None,
     dual0=None,
     sample_weight=None,
+    store_history=True,
+    check_every=1,
 ):
     """Solve weighted sum-of-norms convex clustering.
 
@@ -200,21 +218,66 @@ def solve(
         start is projected onto the current feasible set.
     sample_weight : array of shape (n_samples,), optional
         Strictly positive fidelity weights; defaults to ones.
+    store_history : bool, default=True
+        Record every iteration. False returns an empty history and retains
+        only the final diagnostics; useful for long streamed paths.
+    check_every : int, default=1
+        Evaluate convergence every this many iterations, and always on the
+        final iterate. Values above one reduce certificate evaluation cost
+        for first-order methods but can delay stopping. History contains only
+        checked iterations. Every returned result is checked regardless.
 
     Returns
     -------
     SolverResult
         Centers, feasible dual variables, iteration history and certificates.
     """
-    if np.iscomplexobj(X):
-        raise ValueError("X must be real")
-    x = np.asarray(X, dtype=float)
-    if x.ndim != 2 or min(x.shape) < 1 or not np.isfinite(x).all():
-        raise ValueError("X must be a nonempty finite 2D array")
+    from .problem import ConvexClusteringProblem
+
+    problem = ConvexClusteringProblem(X, weights, sample_weight)
+    return problem.solve(
+        gamma=gamma,
+        penalty=penalty,
+        solver=solver,
+        tol=tol,
+        max_iter=max_iter,
+        sigma=sigma,
+        inner_max_iter=inner_max_iter,
+        x0=x0,
+        dual0=dual0,
+        store_history=store_history,
+        check_every=check_every,
+    )
+
+
+def _solve_prepared(
+    problem,
+    gamma=1.0,
+    penalty="l2",
+    solver="ssnal",
+    tol=1e-6,
+    max_iter=1000,
+    *,
+    sigma=1.0,
+    inner_max_iter=100,
+    x0=None,
+    dual0=None,
+    store_history=True,
+    check_every=1,
+):
+    x, original_x = problem._x, problem._original_x
+    offset, mass = problem._offset, problem._mass
+    b, edge_weights = problem._b, problem._edge_weights
+    if not isinstance(store_history, (bool, np.bool_)):
+        raise ValueError("store_history must be boolean")
     _positive(gamma, "gamma", allow_zero=True)
     _positive(tol, "tol")
     _positive(sigma, "sigma")
-    for value, name in [(max_iter, "max_iter"), (inner_max_iter, "inner_max_iter")]:
+    for value, name in [
+        (max_iter, "max_iter"),
+        (inner_max_iter, "inner_max_iter"),
+        (check_every, "check_every"),
+    ]:
         if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral) or value < 1:
             raise ValueError(f"{name} must be a positive integer")
     if penalty not in ("l1", "l2", "linf"):
@@ -223,26 +286,9 @@ def solve(
         raise ValueError("solver must be 'ssnal', 'admm', 'ama', or 'fama'")
     if solver == "ssnal" and penalty != "l2":
         raise ValueError("SSNAL supports penalty='l2'; use ADMM, AMA or FAMA for other norms")
-    b, edge_weights = graph_from_weights(weights, len(x))
     radii = gamma * edge_weights
     if not np.isfinite(radii).all():
         raise ValueError("gamma times weights must be finite")
-    mass = np.ones((len(x), 1))
-    if sample_weight is not None:
-        m = np.asarray(sample_weight)
-        if np.iscomplexobj(m):
-            raise ValueError("sample_weight must be real")
-        m = m.astype(float)
-        if m.shape != (len(x),) or not np.isfinite(m).all() or (m <= 0).any():
-            raise ValueError(
-                "sample_weight must have one finite strictly positive value per sample; zero is unsupported"
-            )
-        mass = m[:, None]
-    # Remove the translation nullspace from arithmetic, so large coordinate
-    # offsets do not cause cancellation in the dual objective.
-    original_x = x
-    offset = np.average(x, axis=0, weights=mass[:, 0])
-    x = x - offset
     if np.iscomplexobj(x0) or np.iscomplexobj(dual0):
         raise ValueError("warm starts must be real")
     u = x.copy() if x0 is None else np.array(x0, dtype=float, copy=True) - offset
@@ -260,23 +306,29 @@ def solve(
         u, z = x.copy(), np.zeros_like(z)
     history = []
     status = _diagnostics(x, u, z, b, radii, penalty, mass)
-    history.append(dict(iteration=0, **status))
+    if store_history:
+        history.append(dict(iteration=0, **status))
     if solver == "admm" and np.any(radii):
-        linear_solve = factorized((sparse.diags(mass[:, 0]) + sigma * b.T @ b).tocsc())
+        linear_solve = problem._linear_solve(sigma)
         v = b @ u
     if solver in ("ama", "fama") and np.any(radii):
         # Gershgorin bound for ||B M^-1 B.T||; unweighted incidence.
-        lipschitz = 2 * float(np.max(np.asarray(b.power(2).sum(axis=0)).ravel() / mass[:, 0]))
+        lipschitz = problem._lipschitz
         step_size = 1 / lipschitz
         extrapolated = z.copy()
         momentum = 1.0
     inner_ok = True
+    completed_iterations = 0
     for iteration in range(1, max_iter + 1):
         if max(status["relative_gap"], status["kkt_residual"]) <= tol:
             break
         if solver == "ssnal":
-            # Summable absolute inner errors (up to arithmetic precision).
-            target = max(1e-13, min(0.1 / iteration**1.1, tol * 0.1) / max(1.0, np.sqrt(sigma)))
+            # Inexact ALM: do not solve early subproblems to final accuracy.
+            # The absolute cap is summable (paper criterion A'); the KKT-based
+            # term tightens the solve as the current outer iterate improves.
+            stationarity_scale = 1 + np.linalg.norm(mass * (u - x)) + np.linalg.norm(b.T @ z)
+            requested = 0.2 * max(status["kkt_residual"], tol) * stationarity_scale
+            target = max(1e-13, min(0.1 / iteration**1.1, requested) / max(1.0, np.sqrt(sigma)))
             u, inner_ok = _ssn_step(x, u, z, b, radii, sigma, mass, target, inner_max_iter)
             z = project_dual(z + sigma * (b @ u), radii, penalty)
             if iteration % 5 == 0:
@@ -299,14 +351,18 @@ def solve(
                 momentum = next_momentum
             else:
                 extrapolated = z
-        status = _diagnostics(x, u, z, b, radii, penalty, mass)
-        history.append(dict(iteration=iteration, **status))
+        completed_iterations = iteration
+        if iteration % check_every == 0 or iteration == max_iter:
+            status = _diagnostics(x, u, z, b, radii, penalty, mass)
+            if store_history:
+                history.append(dict(iteration=iteration, **status))
     solved_in_centered_coordinates = max(status["relative_gap"], status["kkt_residual"]) <= tol
     returned_centers = u + offset if np.any(radii) else original_x.copy()
     # Certificates must describe the actually returned, representable array.
     # Restoring a large offset may round away a small optimal displacement.
     status = _diagnostics(x, returned_centers - offset, z, b, radii, penalty, mass)
-    history[-1].update(status)
+    if store_history:
+        history[-1].update(status)
     converged = bool(max(status["relative_gap"], status["kkt_residual"]) <= tol)
     message = "Converged" if converged else "Maximum iterations reached"
     if solved_in_centered_coordinates and not converged:
@@ -317,8 +373,9 @@ def solve(
         returned_centers,
         z,
         **status,
-        n_iter=len(history) - 1,
+        n_iter=completed_iterations,
         converged=converged,
         history=history,
         message=message,
+        strong_convexity=float(mass.min()),
     )
