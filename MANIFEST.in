@@ -1,0 +1,3 @@
+include CITATION.cff
+recursive-include docs *.md *.jsonl
+recursive-include examples *.py
