@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Please cite the relevant algorithm papers in addition to this software."
+title: "ssnalclust: Convex clustering for scientific Python"
+type: software
+version: 0.1.0
+repository-code: "https://github.com/dx-li/ssnalclust"
+authors:
+  - name: "dx-li"
+references:
+  - type: article
+    title: "Convex Clustering: Model, Theoretical Guarantee and Efficient Algorithm"
+    authors:
+      - family-names: Sun
+        given-names: Defeng
+      - family-names: Toh
+        given-names: Kim-Chuan
+      - family-names: Yuan
+        given-names: Yancheng
+    journal: Journal of Machine Learning Research
+    volume: 22
+    year: 2021
+    url: "https://www.jmlr.org/papers/volume22/18-694/18-694.pdf"
