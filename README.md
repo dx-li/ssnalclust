@@ -29,6 +29,8 @@ The guide includes an [executed clustering-path gallery](docs/images/clustering_
 and explains graph scaling, solution accuracy, and model-selection limitations.
 The [recovery study](docs/recovery_study.md) reports a fixed moons/circles
 grid, including failures to recover clusters despite certified optimization.
+The [external implementation study](docs/external_reference.md) compares
+solutions with a pinned R/C reference and retains inaccurate reference stops.
 The [readiness ledger](docs/readiness.md) tracks the broader work still needed.
 
 ## Quick start
