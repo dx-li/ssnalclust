@@ -100,6 +100,28 @@ def test_recompute_all_saved_candidate_certificates(capture):
         )
         for field, value in recalculated.items():
             assert np.isfinite(value), (record["case"], record["solver"], field)
+            if field == "center_error_bound":
+                # A square root amplifies relative changes in a gap at the
+                # floating-point floor. Compare the bound in objective units
+                # across platforms, and verify its formula on each platform.
+                assert value >= 0
+                assert_allclose(
+                    value, np.sqrt(2 * recalculated["gap"]), rtol=8 * np.finfo(float).eps, atol=0
+                )
+                assert_allclose(
+                    0.5 * value**2,
+                    record["certificate"]["gap"],
+                    rtol=5e-10,
+                    atol=2e-12,
+                    err_msg=f"{_key(record)} {record['solver']}: squared bound",
+                )
+                assert_allclose(
+                    record["certificate"][field],
+                    np.sqrt(2 * record["certificate"]["gap"]),
+                    rtol=8 * np.finfo(float).eps,
+                    atol=0,
+                )
+                continue
             assert_allclose(
                 value,
                 record["certificate"][field],

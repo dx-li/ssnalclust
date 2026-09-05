@@ -150,6 +150,17 @@ edge orientation, scaling, dual infeasibility and independence from production
 helpers. This preserves a regression check against executed external output
 without downloading or compiling another package on every Python test run.
 
+At the floating-point floor, tiny gaps can differ across numerical libraries
+because summation and norm reductions round differently. Taking `sqrt(2*gap)`
+amplifies the relative difference in those tiny values. The regression tests
+therefore compare saved and recomputed centroid bounds in squared objective
+units (`bound²/2`), using the same tolerance as the gap, while separately
+checking that each bound equals `sqrt(2*gap)`. Objective, gap, KKT and common
+accuracy checks remain unchanged. Comparisons between fresh local fits and
+external centroids use freshly recomputed bounds with only a floating-point
+rounding allowance; machine-floor bounds are not portable high-precision
+measurements of centroid error.
+
 ## Integration validation
 
 The full Python suite passes **646 tests** on the current Python 3.12 stack
