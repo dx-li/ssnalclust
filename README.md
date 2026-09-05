@@ -27,6 +27,8 @@ tests; PyLops is no longer required. A PyPI release has not been published.
 Start with the [user guide](docs/user_guide.md) and [API reference](docs/api.md).
 The guide includes an [executed clustering-path gallery](docs/images/clustering_paths.png)
 and explains graph scaling, solution accuracy, and model-selection limitations.
+The [recovery study](docs/recovery_study.md) reports a fixed moons/circles
+grid, including failures to recover clusters despite certified optimization.
 The [readiness ledger](docs/readiness.md) tracks the broader work still needed.
 
 ## Quick start
@@ -134,9 +136,10 @@ feature-sparse clustering, biclustering, and robust/generalized fidelities.
 See [model definitions and examples](docs/models.md). These use primal-dual
 hybrid gradient (PDHG). Structured quadratic models have their own primal-dual
 gaps; Huber/logistic/Poisson use feasible loss-specific conjugate certificates.
-Both gaps and KKT conditions must pass. The missing-data solver currently
-reports KKT residuals only; a valid missing-data gap needs an additional dual
-equality constraint and remains open work.
+Missing-data fitting uses a lower bound from an equivalent observed-range box
+problem alongside the original masked model's KKT residual. Both gap and KKT
+conditions must pass for every model; see the
+[missing-data certificate definition](docs/missing_certificates.md).
 
 ## Compatibility with the original file
 

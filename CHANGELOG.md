@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Certify missing-data objective gaps using an equivalent observed-range box,
+  while retaining original KKT checks and avoiding artificial ridge penalties.
+- Validate label tolerances before fitting alternative model estimators.
+- Add broader estimator checks and reproducible nonconvex-geometry recovery
+  experiments with explicit oracle tuning and known-cluster-count limitations.
+
 - Reuse prepared data, graphs, and a bounded ADMM factorization cache across
   solves; stream paths without accumulating histories.
 - Use inexact ALM tolerances that avoid oversolving early SSNAL subproblems.

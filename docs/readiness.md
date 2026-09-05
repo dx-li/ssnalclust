@@ -12,8 +12,10 @@ ledger, not a declaration of completion.
   problems; normalized residuals alone can be misleading for scaled data.
 - Complete-data and structured quadratic models should expose meaningful
   objective-gap certificates. Generalized likelihood models need feasible
-  conjugate-domain duals. Missing-data certificates additionally require zero
-  dual divergence on unobserved entries; a complete-data formula is invalid.
+  conjugate-domain duals. Missing-data fitting now uses a certificate for an
+  equivalent observed-range box problem. Its dual is distinct from the
+  unconstrained masked dual, which requires zero missing-entry divergence.
+  See [the proof and independent checks](missing_certificates.md).
 - Test model-specific boundary cases, data scaling, graph degeneracy,
   nonuniqueness and unattained optima. Preserve regressions for discovered
   failures, including failures absent from the initial oracle suite.
@@ -57,5 +59,5 @@ ledger, not a declaration of completion.
   community standard merely because an implementation milestone is finished.
 
 Current work prioritizes stronger certificates, measured Newton performance,
-prepared/streamed paths, and the scientific guide. Further gaps remain open
+prepared/streamed paths, recovery experiments, and estimator compatibility. Further gaps remain open
 until their evidence is recorded and reviewed.

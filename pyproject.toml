@@ -17,8 +17,8 @@ Repository = "https://github.com/dx-li/ssnalclust"
 Issues = "https://github.com/dx-li/ssnalclust/issues"
 
 [project.optional-dependencies]
-test = ["pytest>=8", "cvxpy>=1.5"]
-dev = ["pytest>=8", "cvxpy>=1.5", "ruff", "build"]
+test = ["pytest>=8", "cvxpy>=1.5", "pandas>=1.5.3"]
+dev = ["pytest>=8", "cvxpy>=1.5", "pandas>=1.5.3", "ruff", "build"]
 examples = ["matplotlib>=3.8"]
 
 [tool.setuptools.packages.find]

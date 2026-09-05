@@ -30,7 +30,12 @@ cannot be inferred universally from partially observed data.
 Each feature needs an observation in each positive-fusion connected component.
 Unidentifiable components are rejected. At gamma zero this requires every
 entry to be observed. This policy ensures a bounded location, but missing
-centroids can still be nonunique. No hidden ridge penalty is added.
+centroids can still be nonunique. No hidden ridge penalty is added. Fitting
+selects centroids inside the component-wise observed range; coordinatewise
+clipping preserves the original optimum. The equivalent box problem provides
+a valid lower bound and objective gap, described in
+[missing-data certificates](missing_certificates.md). Convergence requires
+both this relative gap and the original unconstrained KKT residual.
 
 ```python
 import numpy as np
@@ -137,7 +142,8 @@ normalized to be scale-aware, and `tol` applies to their maximum. These are
 numerical first-order conditions for the specified convex objective; they
 are not universal bounds on centroid error for nonstrongly convex losses.
 See [structured certificates](structured_certificates.md) and
-[generalized certificates](generalized_certificates.md) for the additional
+[generalized certificates](generalized_certificates.md), and
+[missing-data certificates](missing_certificates.md) for the additional
 feasible duals and stable gap calculations. Global scaling can yield a weak
 likelihood dual bound; a small KKT residual alone then does not imply success.
 

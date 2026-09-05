@@ -197,8 +197,12 @@ somewhere in every positive-fusion component; gamma zero therefore requires
 fully observed data.
 
 `MissingResult` contains `centers`, `dual`, `objective`, `kkt_residual`,
-`n_iter`, `converged`, and `history`. It does not contain a complete-data
-duality gap. Missing-coordinate solutions need not be unique.
+`n_iter`, `converged`, `history`, `dual_objective`, `gap`, `relative_gap`, and
+`certificate_model="observed_range_box"`. The lower bound comes from an
+equivalent box-constrained problem, not the unconstrained masked Fenchel dual.
+Convergence requires both relative gap and original KKT residual at `tol`.
+Missing-coordinate solutions need not be unique; no centroid-error bound is
+claimed. See [the certificate definition](missing_certificates.md).
 
 `select_gamma` evaluates positive strengths using a reproducible entry holdout.
 The fixed graph must not leak validation targets. It reserves sufficient
