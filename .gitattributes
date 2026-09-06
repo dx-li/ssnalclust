@@ -5,6 +5,8 @@
 examples/data/*.data -text
 examples/data/*.tes -text
 examples/data/*.names -text
+examples/data/*.csv -text
+examples/data/*.txt -text
 docs/**/*.json -text
 docs/**/*.jsonl -text
 docs/**/*.txt -text

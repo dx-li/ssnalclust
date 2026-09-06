@@ -34,6 +34,7 @@ cases where converged optimization still recovers clusters poorly.
 
 Installation <installation>
 User guide <user_guide>
+Real-data method gallery <gallery>
 API overview <api>
 API docstrings <api_generated>
 Model definitions <models>

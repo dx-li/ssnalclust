@@ -25,6 +25,9 @@ tests; PyLops is no longer required. A PyPI release has not been published.
 ## Scientific guide
 
 Start with the [user guide](docs/user_guide.md) and [API reference](docs/api.md).
+The [real-data method gallery](docs/gallery.md) provides runnable examples,
+visualizations and numerical diagnostics for the classical solvers, missing
+entries, sparse clustering, biclustering and generalized losses.
 The guide includes an [executed clustering-path gallery](docs/images/clustering_paths.png)
 and explains graph scaling, solution accuracy, and model-selection limitations.
 The [recovery study](docs/recovery_study.md) reports a fixed moons/circles
@@ -35,6 +38,9 @@ alongside successful numerical cross-checks.
 The [Wine entry-holdout study](docs/wine_holdout.md) adds training-only
 preprocessing and graph construction; its lower reconstruction tuning score
 still selects singleton clusters, illustrating a different selection limit.
+The [corrected stability study](docs/stability_study.md) tests partition-based
+selection and retains its multi-group selections on single-Gaussian controls;
+it is an example workflow, not a public selection API or a test that clusters exist.
 The [external implementation study](docs/external_reference.md) compares
 solutions with a pinned R/C reference and retains inaccurate reference stops.
 The [readiness ledger](docs/readiness.md) tracks the broader work still needed.
@@ -92,6 +98,9 @@ kNN to avoid quadratic graph storage.
 | `admm` | `l1`, `l2`, `linf` | Split ADMM with a reused sparse factorization |
 | `ama` | `l1`, `l2`, `linf` | Dual projected gradient with a safe graph-based step |
 | `fama` | `l1`, `l2`, `linf` | FISTA acceleration of dual projected gradient |
+
+See the [real-data solver comparison](docs/gallery_solvers.md) for examples
+covering these solvers and fusion norms.
 
 ```python
 from ssnalclust import solve, k_neighbors_graph, convex_clustering_path
@@ -154,6 +163,10 @@ Missing-data fitting uses a lower bound from an equivalent observed-range box
 problem alongside the original masked model's KKT residual. Both gap and KKT
 conditions must pass for every model; see the
 [missing-data certificate definition](docs/missing_certificates.md).
+These PDHG implementations are distinct from SSNAL. The gallery includes
+[missing-data](docs/gallery_missing.md),
+[sparse and biclustering](docs/gallery_structured.md), and
+[Huber/logistic/Poisson](docs/gallery_generalized.md) walkthroughs.
 
 ## Compatibility with the original file
 

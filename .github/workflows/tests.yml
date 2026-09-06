@@ -21,6 +21,17 @@ jobs:
       - run: python examples/repeated_solves.py
       - run: python examples/recovery_study.py --smoke --self-test
       - run: python examples/plot_clustering_paths.py --output /tmp/clustering_paths.png
+      - name: Run offline real-data method galleries in smoke mode
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+          MPLBACKEND: Agg
+        run: |
+          python examples/gallery_solvers.py --smoke --output-dir build/artifacts/gallery-solvers
+          python examples/gallery_missing.py --smoke --output-dir build/artifacts/gallery-missing
+          python examples/gallery_structured.py --smoke --output-dir build/artifacts/gallery-structured
+          python examples/gallery_generalized.py --smoke --output-dir build/artifacts/gallery-generalized
       - name: Run offline digits smoke study and plot its saved results
         env:
           OPENBLAS_NUM_THREADS: '1'
@@ -165,6 +176,17 @@ jobs:
           python examples/repeated_solves.py
           python examples/recovery_study.py --smoke --self-test
           python examples/plot_clustering_paths.py --output build/artifacts/clustering_paths.png
+      - name: Run offline real-data method galleries in smoke mode
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+          MPLBACKEND: Agg
+        run: |
+          python examples/gallery_solvers.py --smoke --output-dir build/artifacts/gallery-solvers
+          python examples/gallery_missing.py --smoke --output-dir build/artifacts/gallery-missing
+          python examples/gallery_structured.py --smoke --output-dir build/artifacts/gallery-structured
+          python examples/gallery_generalized.py --smoke --output-dir build/artifacts/gallery-generalized
       - name: Run offline digits smoke study and plot its saved results
         env:
           OPENBLAS_NUM_THREADS: '1'

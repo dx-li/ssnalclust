@@ -5,6 +5,8 @@ rows unless the deprecated `SSNAL` adapter is explicitly used. Function and
 class docstrings describe individual parameters; this page maps the interfaces,
 returned data, and decisions that affect scientific interpretation. Start with
 the [user guide](user_guide.md) for a worked workflow.
+The [real-data gallery](gallery.md) maps these interfaces to runnable examples
+and visualizations for every solver and model family.
 
 ## Shared conventions
 
@@ -84,6 +86,8 @@ sample-row layout; `dual0` has shape `(n_edges, n_features)` in the edge order
 returned by `graph_from_weights`. The dual warm start is projected onto the
 current feasible set. `store_history=False` suppresses iteration records while
 retaining final result diagnostics.
+`check_every` evaluates convergence periodically and always on return. It
+defaults to one; histories contain checked iterations only.
 
 ### `SolverResult`
 
@@ -95,6 +99,7 @@ retaining final result diagnostics.
 | `dual_objective` | Feasible dual objective |
 | `gap` | Absolute primal-dual gap |
 | `relative_gap` | `gap / (1 + abs(objective) + abs(dual_objective))` |
+| `center_error_bound` | Numerical Frobenius centroid-error bound `sqrt(2 * gap / min(sample_weight))` for this complete squared-loss result; unit masses when omitted |
 | `kkt_residual` | Maximum normalized stationarity and proximal residual |
 | `converged` | Both relative gap and KKT residual satisfy `tol` |
 | `n_iter` | Completed outer iterations |
@@ -103,6 +108,13 @@ retaining final result diagnostics.
 
 Certificates describe returned floating-point arrays. A unique complete-data
 centroid solution does not imply a unique edge dual.
+The centroid-error bound uses the absolute gap and strong convexity of the
+complete weighted squared fidelity. It is evaluated in floating point, not
+interval arithmetic, and does not bound errors in thresholded labels. It is
+not inferred for missing-data or generalized-loss results.
+
+See the [solver gallery](gallery_solvers.md) for SSNAL's Euclidean fusion and
+the three supported norms for ADMM, AMA and FAMA.
 
 ## Prepared problems and paths
 
@@ -229,6 +241,7 @@ equivalent box-constrained problem, not the unconstrained masked Fenchel dual.
 Convergence requires both relative gap and original KKT residual at `tol`.
 Missing-coordinate solutions need not be unique; no centroid-error bound is
 claimed. See [the certificate definition](missing_certificates.md).
+The [missing-data gallery](gallery_missing.md) shows the masked model in use.
 
 `select_gamma` evaluates positive strengths using a reproducible entry holdout.
 The fixed graph must not leak validation targets. It reserves sufficient
@@ -272,11 +285,9 @@ Huber centroids and fitted means coincide. The estimator exposes
 `fitted_means_`; its labels threshold natural-parameter centroids. Their certificate uses the actual fidelity conjugate, not a substituted
 quadratic objective.
 
-`SolverResult.center_error_bound` (squared-loss models) evaluates the
-strong-convexity error bound from the absolute gap and minimum sample mass.
-For long first-order solves, `check_every` evaluates convergence periodically
-and always on return. It defaults to one, and histories contain checked
-iterations only.
+These losses use PDHG, not SSNAL. See the
+[generalized-loss gallery](gallery_generalized.md) for Huber, logistic and
+Poisson examples with fitted-mean visualizations.
 
 ## Sparse clustering and biclustering
 
@@ -306,6 +317,9 @@ Biclustering jointly fuses rows and columns using distinct graphs. The column
 adjacency has shape `(n_features, n_features)`; `None` on either axis means a
 complete unit graph for that axis. Zero strength disables that axis's fusion.
 These models currently use Euclidean group penalties.
+They use PDHG, not the complete-data SSNAL solver. See the
+[structured-model gallery](gallery_structured.md) for feature-sparse and
+biclustering examples.
 
 `StructuredResult` contains `centers`, `objective`, `dual_objective`, `gap`,
 `relative_gap`, `kkt_residual`, `n_iter`, `converged`, `history`, and `duals`.

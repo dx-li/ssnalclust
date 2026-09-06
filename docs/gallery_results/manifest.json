@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "scope": "Full illustrative gallery artifacts; hashes preserve saved outputs, not independent mathematical certification or model selection validity.",
+  "path_base": "docs",
+  "groups": {
+    "solvers": {
+      "reports": [
+        "gallery_results/solvers/solvers.json"
+      ],
+      "arrays": [
+        "gallery_results/solvers/solvers.npz"
+      ],
+      "figures": [
+        "_static/gallery_convergence.png",
+        "_static/gallery_graphs.png",
+        "_static/gallery_paths.png",
+        "_static/gallery_solvers.png"
+      ]
+    },
+    "missing": {
+      "reports": [
+        "gallery_results/missing/gallery_missing.json"
+      ],
+      "arrays": [
+        "gallery_results/missing/gallery_missing.npz"
+      ],
+      "figures": [
+        "_static/gallery_missing.png"
+      ]
+    },
+    "structured": {
+      "reports": [
+        "gallery_results/structured/gallery_structured.json"
+      ],
+      "arrays": [
+        "gallery_results/structured/gallery_structured.npz"
+      ],
+      "figures": [
+        "_static/gallery_biclustering.png",
+        "_static/gallery_sparse.png"
+      ]
+    },
+    "generalized": {
+      "reports": [
+        "gallery_results/generalized/diagnostics.json"
+      ],
+      "arrays": [
+        "gallery_results/generalized/fits.npz"
+      ],
+      "figures": [
+        "_static/gallery_huber.png",
+        "_static/gallery_logistic.png",
+        "_static/gallery_poisson.png"
+      ]
+    }
+  },
+  "artifacts": [
+    {
+      "path": "_static/gallery_convergence.png",
+      "group": "solvers",
+      "kind": "figures",
+      "bytes": 75823,
+      "sha256": "6b1d57459214545a701d714c91da7f28a73e7dcf1ff3a304b25926e7b1bc8e22"
+    },
+    {
+      "path": "_static/gallery_graphs.png",
+      "group": "solvers",
+      "kind": "figures",
+      "bytes": 467284,
+      "sha256": "01a7954d47a24eded9bb92943331ec9091aebeb6c33408bd204006d1e5a6516f"
+    },
+    {
+      "path": "_static/gallery_paths.png",
+      "group": "solvers",
+      "kind": "figures",
+      "bytes": 73328,
+      "sha256": "8631b8bf6371cd21084bfc8b469a5315d2db5524ac60763eaa034667b1b97d8e"
+    },
+    {
+      "path": "_static/gallery_solvers.png",
+      "group": "solvers",
+      "kind": "figures",
+      "bytes": 270072,
+      "sha256": "8157722a4eb5fb1a60af19b89d484ca5f268bb15a570066d988e7c8a4591bacf"
+    },
+    {
+      "path": "gallery_results/solvers/solvers.json",
+      "group": "solvers",
+      "kind": "reports",
+      "bytes": 9517,
+      "sha256": "f7693e7cc2137d9456ef82e3d4f317eb7d35e43f9d0468fd5ed6b171bd0d2933"
+    },
+    {
+      "path": "gallery_results/solvers/solvers.npz",
+      "group": "solvers",
+      "kind": "arrays",
+      "bytes": 958616,
+      "sha256": "bd2ca9baaa7b01a30319cb8168830f7f463a8395c561b62df991d2fd79d0cf7e"
+    },
+    {
+      "path": "gallery_results/missing/gallery_missing.json",
+      "group": "missing",
+      "kind": "reports",
+      "bytes": 4139,
+      "sha256": "11b40832e6d2fd175b389adcb3ed01f6f921c72f81a2959e6cb9cd3e07877d2e"
+    },
+    {
+      "path": "gallery_results/missing/gallery_missing.npz",
+      "group": "missing",
+      "kind": "arrays",
+      "bytes": 64448,
+      "sha256": "9d641b44988a2a7bfa240dbe753d00cc76147199cd46d2ec78a56cc52fad2744"
+    },
+    {
+      "path": "_static/gallery_missing.png",
+      "group": "missing",
+      "kind": "figures",
+      "bytes": 159859,
+      "sha256": "50fdd92090e91920557a2cd2f8b466cd90d7417ace5f86867ce84e953917c105"
+    },
+    {
+      "path": "_static/gallery_biclustering.png",
+      "group": "structured",
+      "kind": "figures",
+      "bytes": 175657,
+      "sha256": "18704587209014bec3f474d25d2d387c7126904f8330539a6c21e10b40bf9435"
+    },
+    {
+      "path": "_static/gallery_sparse.png",
+      "group": "structured",
+      "kind": "figures",
+      "bytes": 305950,
+      "sha256": "8d88a373a376c169b8d7b9c70bd30deb9dc8981a1350c82fd6d2398826c1109b"
+    },
+    {
+      "path": "gallery_results/structured/gallery_structured.json",
+      "group": "structured",
+      "kind": "reports",
+      "bytes": 5462,
+      "sha256": "8ce9360069afd0b400da7ebbaf34550bd3d3cbd0c2510a7d435fd529d8921693"
+    },
+    {
+      "path": "gallery_results/structured/gallery_structured.npz",
+      "group": "structured",
+      "kind": "arrays",
+      "bytes": 1275859,
+      "sha256": "fd96e3a48022f939e82bff8469cafbf560537b79f682ab9c8a7fe440aa4f1675"
+    },
+    {
+      "path": "gallery_results/generalized/diagnostics.json",
+      "group": "generalized",
+      "kind": "reports",
+      "bytes": 6049,
+      "sha256": "6fc7df084a5336305b38d073aaaacffb9e373111817f4962d45400772db829ac"
+    },
+    {
+      "path": "gallery_results/generalized/fits.npz",
+      "group": "generalized",
+      "kind": "arrays",
+      "bytes": 535856,
+      "sha256": "8aabe0744369881192a65af8fe856fbc676cae3e9c7b994d39eeb9882fa7d37e"
+    },
+    {
+      "path": "_static/gallery_huber.png",
+      "group": "generalized",
+      "kind": "figures",
+      "bytes": 117267,
+      "sha256": "1864d225be1099b61bf26eb39dee7b6bfd0c57dbc50bdea1f6614b543be278fa"
+    },
+    {
+      "path": "_static/gallery_logistic.png",
+      "group": "generalized",
+      "kind": "figures",
+      "bytes": 92095,
+      "sha256": "6e6acd31147a1314923f8e6e66a105f588ee7409641ab425c52a5b6929b8f44b"
+    },
+    {
+      "path": "_static/gallery_poisson.png",
+      "group": "generalized",
+      "kind": "figures",
+      "bytes": 174355,
+      "sha256": "944bea27f7ef85613055ab306ac2493b482151e13031091f68acf78cba223772"
+    }
+  ]
+}
