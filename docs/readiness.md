@@ -60,6 +60,10 @@ ledger, not a declaration of completion.
 
 - Keep minimum/current dependency environments and supported Python versions
   in CI, execute examples, and build distributions.
+  [Windows/macOS jobs](platform_validation.md) now exercise installed wheels,
+  the scientific suite and fresh runtime-only installations on Python 3.12.
+  Broader platform/version combinations and shared release-candidate
+  artifact validation remain open.
 - Build searchable documentation and validate installed wheel/source artifacts
   in fresh runtime environments. The [local documentation build](installation.md),
   [distribution harness](distribution_validation.md), [release checklist](releasing.md),

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add Windows and macOS installed-wheel CI, scientific user workflows and
+  isolated distribution checks, with retained environment and test evidence.
+
 - Extend scalability evidence with graph-weight and centroid-movement
   diagnostics, direct edge fusion, and completed-point certificates that
   survive path timeouts; measure high-dimensional fits and paths.

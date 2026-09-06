@@ -75,6 +75,7 @@ Project scope <scope>
 Readiness ledger <readiness>
 Release checklist <releasing>
 Package installation checks <distribution_validation>
+Platform validation <platform_validation>
 ```
 
 The repository includes [contribution guidance](path:../CONTRIBUTING.md),
