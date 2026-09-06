@@ -166,7 +166,9 @@ Tests include analytic two-point solutions, independent CVXPY comparisons,
 finite differences of the reduced gradient and generalized Hessian,
 translation/rotation and weighted-mean invariants, sparse/disconnected graphs,
 zero regularization, nonconvergence, and estimator integration. CVXPY is an
-independent test oracle, never a runtime fallback.
+independent test oracle, never a runtime fallback. The
+[platform validation record](docs/platform_validation.md) documents executed
+Linux, Windows and macOS coverage and its limits.
 
 ```bash
 python examples/basic_usage.py

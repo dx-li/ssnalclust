@@ -14,6 +14,10 @@ Use `python -m pip install -e '.[dev,examples]'` when modifying the library.
 CVXPY, pytest and pandas are test dependencies; Matplotlib is an example
 extra. R and external reference packages are not runtime dependencies.
 
+The [platform validation record](platform_validation.md) describes the tested
+Linux, Windows and macOS combinations, including the explicit benchmark skip
+on Windows.
+
 ## Build this documentation
 
 ```sh

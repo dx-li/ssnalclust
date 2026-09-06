@@ -31,12 +31,15 @@ tags, configure a publisher, or upload distributions.
    context, but does not certify a changed candidate.
 
 The [test workflow](../.github/workflows/tests.yml) covers Python 3.10, 3.12
-and 3.13, plus a minimum dependency job. A separate job builds documentation
-from the source archive and checks isolated wheel/source installations,
+and 3.13 on Linux, plus a minimum dependency job.
+[Windows/macOS jobs](platform_validation.md) exercise Python 3.12 installed
+wheels, the scientific suite, examples and fresh distribution installations.
+A separate job builds documentation from the source archive and checks isolated wheel/source installations,
 retaining HTML, distributions and the numerical validation report for 14
 days. Archive release evidence separately when longer retention is needed.
-Review the workflow at the candidate commit and retain its actual run links. Do not imply Windows/macOS or other Python
-versions were tested merely because metadata does not exclude them.
+Review the workflow at the candidate commit and retain its actual run links.
+Do not imply additional operating-system/Python/dependency combinations
+were tested merely because metadata does not exclude them.
 
 ## Build and validate the actual artifacts
 
