@@ -56,6 +56,7 @@ Newton operator <newton_operator>
 :caption: Inspect the evidence
 
 Recovery study <recovery_study>
+Optical Digits protocol <digits_protocol>
 External comparison <external_reference>
 Reference conventions <external_reference_conventions>
 Other implementations <external_reference_candidates>
