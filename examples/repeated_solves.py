@@ -17,7 +17,9 @@ with closing(
     problem.iter_path(gammas, solver="admm", max_iter=5000, tol=1e-7, store_history=False)
 ) as results:
     with closing(iter_path_summaries(results)) as summaries:
-        for gamma, point in zip(gammas, summaries):
+        gamma_values = iter(gammas)
+        for point in summaries:
+            gamma = next(gamma_values)
             assert point["converged"], point
             print(
                 f"gamma={gamma:.4f}, clusters={point['n_clusters']}, "
