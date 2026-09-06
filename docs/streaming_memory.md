@@ -113,6 +113,40 @@ length. Turning off histories alone does not make either list-returning API
 a streaming consumer. Close a partially consumed generator when done to
 release its internal references.
 
+### Inspecting a path without accumulating summaries
+
+The subsequent `iter_path_summaries` API consumes a solver iterator and yields
+one partition, its merge/split transitions, and available certificates at a
+time. It keeps a private previous partition so consumer label mutations cannot
+alter future transitions. It releases input fits and discarded summaries
+before requesting another point. `summarize_path` remains the list interface.
+
+```python
+from ssnalclust import iter_path_summaries
+
+stream = problem.iter_path(gammas, store_history=False)
+summaries = iter_path_summaries(stream, cluster_tol=1e-4)
+try:
+    for point in summaries:
+        print(point["n_clusters"], point["converged"], point["relative_gap"],
+              point["merges"], point["splits"])
+        del point
+finally:
+    summaries.close()
+    stream.close()
+```
+
+The wrapper borrows its source; closing it does not close the caller's solver
+iterator. Both should be closed if consumption stops early. Retaining yielded
+summaries still accumulates label arrays. Optional certificate fields are
+`None` when the input result does not supply them. Thresholded partitions and
+transitions do not certify exact fusions or a hierarchy, and unconverged points
+are preserved.
+
+Weak-reference regressions verify object lifetimes and mutation isolation.
+The native RSS measurements above predate this summary API and do not measure
+its cluster-extraction cost or peak memory.
+
 ## Reproduce and inspect
 
 From a checkout with the package and plotting extra installed:

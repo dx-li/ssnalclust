@@ -12,7 +12,7 @@ from .model_estimators import (
     MissingConvexClustering,
     SparseConvexClustering,
 )
-from .path import summarize_path
+from .path import iter_path_summaries, summarize_path
 from .problem import ConvexClusteringProblem
 from .selection import SelectionResult, select_gamma
 from .solvers import SolverResult, solve
@@ -23,6 +23,7 @@ __all__ = [
     "ConvexClusteringProblem",
     "iter_convex_clustering_path",
     "summarize_path",
+    "iter_path_summaries",
     "minimum_spanning_tree_graph",
     "connected_k_neighbors_graph",
     "self_tuning_graph",

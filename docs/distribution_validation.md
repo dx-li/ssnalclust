@@ -56,6 +56,7 @@ gaps, and KKT residuals. Several checks also have closed-form expected values:
 | `ConvexClustering` | Fused labels and cluster-center summary |
 | `ConvexClusteringProblem` | Prepared dimensions and a solve on the fixed graph |
 | Prepared/public streamed paths and public list path | Zero-gamma recovery, final common centroid, path summaries, disabled history |
+| Streamed path summaries | Cluster counts and available certificates while consuming a solver iterator |
 | Missing-data model | Complementary observed entries recover a common vector with zero objective |
 | Huber model | Large-delta case agrees with the squared-loss solution |
 | Logistic/Poisson models | Constant-observation natural-parameter fits, means, and likelihood objectives |

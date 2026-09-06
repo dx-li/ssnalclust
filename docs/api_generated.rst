@@ -18,6 +18,11 @@ iter_convex_clustering_path
 
 .. autofunction:: iter_convex_clustering_path
 
+iter_path_summaries
+-------------------
+
+.. autofunction:: iter_path_summaries
+
 summarize_path
 --------------
 
@@ -159,4 +164,3 @@ SparseConvexClustering
 .. autoclass:: SparseConvexClustering
    :members:
    :exclude-members: set_fit_request, get_metadata_routing
-

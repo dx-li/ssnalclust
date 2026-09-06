@@ -119,6 +119,7 @@ problem.path(gammas, **solver_options)
 
 convex_clustering_path(X, gammas, weights=None, **solver_options)
 iter_convex_clustering_path(X, gammas, weights=None, **solver_options)
+iter_path_summaries(results, cluster_tol=1e-4)
 summarize_path(results, cluster_tol=1e-4)
 ```
 
@@ -136,11 +137,36 @@ centroids and duals as warm starts. Nonnegative finite strengths are evaluated
 in input order; arbitrary increasing or decreasing sequences are valid. A
 stream validates each strength when it reaches it.
 
-`summarize_path` returns a list of dictionaries with `labels`, `n_clusters`,
-`objective`, `converged`, `n_iter`, `kkt_residual`, `merges`, and `splits`.
+`iter_path_summaries` lazily yields dictionaries with `labels`, `n_clusters`,
+`objective`, `converged`, `n_iter`, `kkt_residual`, `merges`, `splits`,
+`dual_objective`, `gap`, `relative_gap`, and `center_error_bound`.
+The last four fields are `None` when the input result does not provide them;
+the summarizer does not infer certificates or bounds for another model.
+`summarize_path` materializes this iterator as a list with the same fields.
 Transitions refer to the thresholded partitions at consecutive supplied
 points. Unconverged points remain marked. No hierarchical path assumption or
 exact fusion-time calculation is imposed.
+
+The lazy summarizer keeps a private copy of the previous partition, without
+accumulating earlier fits. Accumulating its output still retains each summary's
+labels and transitions. It borrows the input iterable: closing the summarizer
+does not close an upstream solver generator. The caller owns that generator
+and should close it when stopping early. For example:
+
+```python
+from contextlib import closing
+from ssnalclust import iter_path_summaries
+
+with closing(problem.iter_path([0.01, 0.1, 1.0], store_history=False)) as results:
+    with closing(iter_path_summaries(results)) as summaries:
+        for point in summaries:
+            print(point["n_clusters"], point["converged"],
+                  point["relative_gap"], point["center_error_bound"])
+```
+
+Certificate values describe the optimization result, not the accuracy of its
+thresholded cluster labels. See the runnable
+[repeated-solves example](../examples/repeated_solves.py).
 
 ## Graph construction
 
