@@ -191,3 +191,9 @@ KKT residual was 8.51e-7, relative gap 1.74e-8 and weighted Frobenius center
 error bound 0.01386. This verifies the final revision on that scenario; the
 earlier 10,000-sample measurement used the preceding adaptive-tolerance
 revision and must not be relabeled as a measurement of the final hash.
+
+## Subsequent Newton-operator measurements
+
+The [Newton performance study](newton_performance.md) compares a pinned
+baseline with the subsequent operator change. Its records have separate
+source hashes and must not be conflated with the measurements above.

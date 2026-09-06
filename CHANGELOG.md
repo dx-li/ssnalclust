@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reduce temporary-array work in SSNAL Newton products and normalize edge
+  vectors before evaluating their projection Jacobians, avoiding finite-input
+  norm overflow and underflow.
+
 - Compare with an executed, pinned R/C cvxclustr reference using independent
   certificates; preserve raw outputs, inaccurate stopping cases, and CI
   regressions without adding R as a runtime dependency.

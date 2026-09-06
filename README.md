@@ -175,8 +175,10 @@ results are in [benchmark_results.jsonl](docs/benchmark_results.jsonl); they
 are not portable performance guarantees. Sparse ADMM factorizations can fill
 in; high-dimensional nearest-neighbor queries and dense graphs can be costly.
 The [process-isolated scalability study](docs/scalability.md) now includes
-native peak RSS and sparse cases through 10,000 samples, with source hashes,
-Newton/CG profiling and timeout records. See the
+native peak RSS, source hashes, Newton/CG profiling and timeout records.
+The subsequent [Newton study](docs/newton_performance.md) measures a converged
+50,000-sample sparse case and an approximately twofold reduction in solve
+time at 5,000 and 10,000 samples on the recorded host. See the
 [readiness ledger](docs/readiness.md) for remaining work.
 
 ## References
