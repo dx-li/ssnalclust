@@ -181,7 +181,10 @@ The [process-isolated scalability study](docs/scalability.md) now includes
 native peak RSS, source hashes, Newton/CG profiling and timeout records.
 The subsequent [Newton study](docs/newton_performance.md) measures a converged
 50,000-sample sparse case and an approximately twofold reduction in solve
-time at 5,000 and 10,000 samples on the recorded host. See the
+time at 5,000 and 10,000 samples on the recorded host. The
+[high-dimensional study](docs/high_dimensional.md) covers 32–512 features,
+materialized paths, and partial-fusion cases, with graph-weight and centroid-
+movement diagnostics to distinguish meaningful fits from negligible fusion. See the
 [readiness ledger](docs/readiness.md) for remaining work.
 
 ## References

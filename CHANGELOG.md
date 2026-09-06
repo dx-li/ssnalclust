@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Extend scalability evidence with graph-weight and centroid-movement
+  diagnostics, direct edge fusion, and completed-point certificates that
+  survive path timeouts; measure high-dimensional fits and paths.
+
 - Add a strict Sphinx/MyST documentation build with generated public API
   reference, isolated wheel/source installation checks, release guidance,
   and scientific issue templates.

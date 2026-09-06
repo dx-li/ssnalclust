@@ -61,6 +61,7 @@ Reference conventions <external_reference_conventions>
 Other implementations <external_reference_candidates>
 Scalability <scalability>
 Newton performance <newton_performance>
+High-dimensional paths <high_dimensional>
 Baseline validation <validation>
 Reliability validation <validation_followup>
 Missing-data validation <validation_missing_and_recovery>

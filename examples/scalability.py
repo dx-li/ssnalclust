@@ -37,6 +37,92 @@ def _rss():
     return int(value if sys.platform == "darwin" else value * 1024)
 
 
+def _graph_evidence(graph):
+    """Summarize a validated symmetric positive-edge CSR graph in O(n+m) storage."""
+    import numpy as np
+    from scipy.sparse.csgraph import connected_components
+
+    degree = np.asarray(graph.sum(axis=1)).ravel()
+    positive = graph.data[graph.data > 0]
+    statistics = {}
+    for name, values in [("positive_edge_weight", positive), ("weighted_degree", degree)]:
+        statistics.update(
+            {
+                name + "_min": float(values.min()) if len(values) else None,
+                name + "_median": float(np.median(values)) if len(values) else None,
+                name + "_max": float(values.max()) if len(values) else None,
+            }
+        )
+    return dict(
+        connected_components=int(connected_components(graph, directed=False, return_labels=False)),
+        isolated_vertices=int(np.count_nonzero(degree == 0)),
+        **statistics,
+    )
+
+
+def _weighted_input_edge_penalty(X, graph):
+    """Unscaled l2 fusion penalty at the input, using bounded edge batches."""
+    import numpy as np
+    from scipy import sparse
+
+    edges = sparse.triu(graph, k=1, format="coo")
+    batch = max(1, min(4096, 1_000_000 // X.shape[1]))
+    total = 0.0
+    for begin in range(0, edges.nnz, batch):
+        end = begin + batch
+        difference = X[edges.row[begin:end]] - X[edges.col[begin:end]]
+        total += float(edges.data[begin:end] @ np.linalg.norm(difference, axis=1))
+    return total
+
+
+def _solution_evidence(
+    X, graph, gamma, result, cluster_tol, centered_input_norm=None, initial_edge_penalty=None
+):
+    """Measure displacement and direct edge fusion, separate from label connectivity.
+
+    With zero centered input norm, relative displacement is zero for an
+    unchanged solution and null otherwise. No-edge fusion fractions are null.
+    Edge differences are processed in bounded batches, never an m-by-p array.
+    """
+    import numpy as np
+    from scipy import sparse
+
+    displacement = float(np.linalg.norm(result.centers - X))
+    if centered_input_norm is None:
+        centered_input_norm = float(np.linalg.norm(X - X.mean(axis=0)))
+    if centered_input_norm:
+        relative = displacement / centered_input_norm
+        normalization = "centered_input_norm"
+    elif displacement == 0:
+        relative = 0.0
+        normalization = "zero_baseline_no_displacement"
+    else:
+        relative = None
+        normalization = "undefined_zero_baseline"
+    edges = sparse.triu(graph, k=1, format="coo")
+    edges.eliminate_zeros()
+    fused = 0
+    # Bound temporary edge-by-feature differences to roughly one million
+    # entries even when benchmarking high-dimensional observations.
+    batch = max(1, min(4096, 1_000_000 // X.shape[1]))
+    for begin in range(0, edges.nnz, batch):
+        end = begin + batch
+        difference = result.centers[edges.row[begin:end]] - result.centers[edges.col[begin:end]]
+        fused += int(np.count_nonzero(np.linalg.norm(difference, axis=1) <= cluster_tol))
+    if initial_edge_penalty is None:
+        initial_edge_penalty = _weighted_input_edge_penalty(X, graph)
+    return dict(
+        gamma=float(gamma),
+        gap=float(result.gap),
+        zero_dual_initial_gap=float(gamma * initial_edge_penalty),
+        centroid_displacement_frobenius=displacement,
+        centered_input_norm=centered_input_norm,
+        relative_centroid_displacement=relative,
+        relative_displacement_normalization=normalization,
+        direct_fused_edge_fraction=float(fused / edges.nnz) if edges.nnz else None,
+    )
+
+
 def _worker(config):
     emit_lock = threading.Lock()
     stage_timings = {}
@@ -133,6 +219,26 @@ def _worker(config):
         ]:
             if hasattr(solvers, attribute):
                 setattr(solvers, attribute, timed(name, getattr(solvers, attribute)))
+        original_prepared_solve = solvers._solve_prepared
+
+        def reported_prepared_solve(prepared, *args, **kwargs):
+            result = original_prepared_solve(prepared, *args, **kwargs)
+            # A materialized path may later time out. Preserve completed point
+            # certificates immediately without retaining more centroid arrays.
+            gamma = kwargs.get("gamma", args[0] if args else 1.0)
+            emit(
+                "solution_complete",
+                gamma=float(gamma),
+                objective=result.objective,
+                gap=result.gap,
+                relative_gap=result.relative_gap,
+                kkt_residual=result.kkt_residual,
+                converged=result.converged,
+                iterations=result.n_iter,
+            )
+            return result
+
+        solvers._solve_prepared = reported_prepared_solve
         problem.graph_from_weights = timed("incidence", problem.graph_from_weights)
         problem.factorized = timed("factorization", problem.factorized)
         original_cg = solvers.cg
@@ -163,11 +269,13 @@ def _worker(config):
         graph = timed("graph", k_neighbors_graph, events=True)(
             X, n_neighbors=min(config["neighbors"], n - 1), bandwidth=config["bandwidth"]
         )
+        graph_evidence = timed("graph_evidence", _graph_evidence, events=True)(graph)
         emit(
             "graph_summary",
             edges=graph.nnz // 2,
             graph_nnz=graph.nnz,
             graph_storage_bytes=graph.data.nbytes + graph.indices.nbytes + graph.indptr.nbytes,
+            **graph_evidence,
         )
         pipeline_start = time.perf_counter()
         if config["scenario"] == "fit":
@@ -200,22 +308,44 @@ def _worker(config):
             labels = estimator._centroid_labels(X, config["cluster_tol"])
             results, clusters = [], [int(labels.max()) + 1]
         pipeline_seconds = time.perf_counter() - pipeline_start
-        solutions = [
-            dict(
-                converged=result.converged,
-                iterations=result.n_iter,
-                objective=result.objective,
-                relative_gap=result.relative_gap,
-                kkt_residual=result.kkt_residual,
-                center_error_bound=getattr(result, "center_error_bound", None),
-            )
-            for result in results
-        ]
+
+        def summarize_solutions():
+            if not results:
+                return []
+            centered_norm = float(np.linalg.norm(X - X.mean(axis=0)))
+            initial_edge_penalty = _weighted_input_edge_penalty(X, graph)
+            gammas = config["path_gammas"] if config["scenario"] == "path" else [config["gamma"]]
+            return [
+                dict(
+                    converged=result.converged,
+                    iterations=result.n_iter,
+                    objective=result.objective,
+                    relative_gap=result.relative_gap,
+                    kkt_residual=result.kkt_residual,
+                    center_error_bound=getattr(result, "center_error_bound", None),
+                    **_solution_evidence(
+                        X,
+                        graph,
+                        gamma,
+                        result,
+                        config["cluster_tol"],
+                        centered_norm,
+                        initial_edge_penalty,
+                    ),
+                )
+                for gamma, result in zip(gammas, results)
+            ]
+
+        # Evidence collection is excluded from pipeline/solver timings, but
+        # included in worker wall time and measured process peak memory.
+        solutions = timed("solution_evidence", summarize_solutions, events=True)()
         emit(
             "result",
             status="completed",
             pipeline_seconds=pipeline_seconds,
             graph_plus_pipeline_seconds=stage_timings["graph"] + pipeline_seconds,
+            evidence_seconds=stage_timings["graph_evidence"] + stage_timings["solution_evidence"],
+            evidence_timing="excluded_from_pipeline_included_in_worker",
             worker_seconds=time.perf_counter() - worker_start,
             stage_seconds=stage_timings,
             stage_calls=stage_calls,
