@@ -1,0 +1,108 @@
+{
+  "status": "passed",
+  "checks": 15734,
+  "failures": [],
+  "workers": [
+    {
+      "name": "separated_8101",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.94700305365415e-07,
+        "relative_gap": 6.997525760849883e-07,
+        "dual_ball_excess": 3.885780586188048e-16
+      },
+      "selected_factor": 30.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "separated_8102",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.966693614902824e-07,
+        "relative_gap": 6.576899824967663e-07,
+        "dual_ball_excess": 1.942890293094024e-16
+      },
+      "selected_factor": 30.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "separated_8103",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.969720679872058e-07,
+        "relative_gap": 9.135746806970639e-07,
+        "dual_ball_excess": 1.1102230246251565e-16
+      },
+      "selected_factor": 30.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "overlap_8101",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.983250953575016e-07,
+        "relative_gap": 6.9613391184491e-07,
+        "dual_ball_excess": 1.1102230246251565e-15
+      },
+      "selected_factor": 30.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "overlap_8102",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.870830295923962e-07,
+        "relative_gap": 6.769350256699972e-07,
+        "dual_ball_excess": 6.661338147750939e-16
+      },
+      "selected_factor": 30.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "overlap_8103",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.735124779565023e-07,
+        "relative_gap": 4.604947454295655e-07,
+        "dual_ball_excess": 4.440892098500626e-16
+      },
+      "selected_factor": 10.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "single_gaussian_8101",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.924523567698407e-07,
+        "relative_gap": 8.421288959873909e-07,
+        "dual_ball_excess": 8.881784197001252e-16
+      },
+      "selected_factor": 3.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "single_gaussian_8102",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.98785706808534e-07,
+        "relative_gap": 9.67722816088046e-07,
+        "dual_ball_excess": 1.3322676295501878e-15
+      },
+      "selected_factor": 30.0,
+      "audit_eligible": true
+    },
+    {
+      "name": "single_gaussian_8103",
+      "points": 87,
+      "maxima": {
+        "kkt": 9.912708152717553e-07,
+        "relative_gap": 8.90752481959355e-07,
+        "dual_ball_excess": 8.881784197001252e-16
+      },
+      "selected_factor": 10.0,
+      "audit_eligible": true
+    }
+  ],
+  "source_manifest_sha256": "e4df1191cbd423571ea7de3f6c5552d7b6825145083d4a88959fe5ae2dfc15ea",
+  "scope": "Floating-point reconstruction, not interval certification or population validation"
+}

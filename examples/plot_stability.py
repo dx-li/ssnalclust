@@ -37,7 +37,11 @@ def plot(directory, output):
             axes[0, col].plot(factors, scores, "o-", color=color, ms=4)
             invalid = ~np.isfinite(scores)
             axes[0, col].plot(
-                factors[invalid], np.full(invalid.sum(), 1.06), "x", color=color, ms=5
+                factors[invalid],
+                np.full(invalid.sum(), 1.025 + 0.035 * seeds.index(report["seed"])),
+                "x",
+                color=color,
+                ms=5,
             )
             full = next(s for s in report["samples_fitted"] if s["name"] == "full")
             counts = [p["n_clusters"] for p in full["points"]]
@@ -80,6 +84,7 @@ def plot(directory, output):
         axes[2, col].set_ylim(-0.1, 1.07)
         for row in range(3):
             axes[row, col].set_xscale("symlog", linthresh=0.1)
+            axes[row, col].set_xlim(-0.005, 45)
             axes[row, col].set_xticks([0, 0.1, 1, 10, 30], labels=["0", "0.1", "1", "10", "30"])
             axes[row, col].grid(alpha=0.2)
             axes[row, col].set_xlabel("Strength factor")

@@ -51,3 +51,13 @@ def test_recorded_wine_artifact_hashes():
         for field, suffix in (("checkpoint", "json"), ("arrays", "npz"), ("log", "txt")):
             path = directory / record[field]
             assert digest(path) == record[suffix + "_sha256"], path.name
+
+
+def test_recorded_stability_artifact_hashes():
+    directory = ROOT / "docs/stability_results"
+    manifest = json.loads((directory / "study.json").read_text())
+    assert digest(ROOT / "docs/stability_protocol.md") == manifest["protocol_sha256"]
+    for record in manifest["processes"]:
+        for field in ("checkpoint", "arrays", "selection", "log"):
+            path = directory / record[field]
+            assert digest(path) == record[field + "_sha256"], path.name

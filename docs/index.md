@@ -61,6 +61,7 @@ Optical Digits protocol <digits_protocol>
 Optical Digits execution <digits_execution>
 Wine held-out-entry study <wine_holdout>
 Wine holdout protocol <heldout_protocol>
+Corrected stability study <stability_study>
 Corrected stability protocol <stability_protocol>
 External comparison <external_reference>
 Reference conventions <external_reference_conventions>
