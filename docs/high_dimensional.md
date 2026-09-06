@@ -11,7 +11,9 @@ Gaussian observations have no planted cluster labels.
 Raw observations are retained in [high_dimensional_results.jsonl](high_dimensional_results.jsonl).
 The 20 runs used macOS arm64, Python 3.12.5, NumPy 2.5.2, SciPy 1.18.1
 and scikit-learn 1.9.0. They share one harness hash and the same package-source
-hashes. Every completed solution passed both requested stopping conditions.
+hashes. The measured harness is preserved at
+[commit 58b0353](https://github.com/dx-li/ssnalclust/blob/58b035331ffe8e6a38f14e6bdef03d3cd55f901e/examples/scalability.py).
+Every completed solution passed both requested stopping conditions.
 All 20 workers completed within their deadlines. No errors, timeouts or
 unconverged points were discarded.
 

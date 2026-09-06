@@ -12,7 +12,6 @@ import itertools
 import json
 import os
 import platform
-import resource
 import subprocess
 import sys
 import threading
@@ -31,6 +30,9 @@ THREAD_VARIABLES = (
 
 
 def _rss():
+    # Keep platform-independent evidence helpers importable on Windows.
+    import resource
+
     # macOS reports bytes; Linux reports KiB. This is the process high-water
     # mark, including native numerical allocations and imported libraries.
     value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

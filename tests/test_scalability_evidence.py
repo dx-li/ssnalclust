@@ -3,6 +3,7 @@
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -110,6 +111,10 @@ def test_sparse_graph_evidence_never_densifies_adjacency(harness, monkeypatch):
     assert evidence["direct_fused_edge_fraction"] == 0
 
 
+@pytest.mark.skipif(
+    sys.platform not in {"linux", "darwin"},
+    reason="Native-RSS benchmark integration currently supports Linux and macOS",
+)
 def test_completed_path_emits_individual_certificates_and_separate_evidence_time(harness):
     config = dict(
         samples=8,
@@ -166,3 +171,23 @@ def test_timeout_preserves_completed_prefix_without_full_path_claim(harness, mon
     assert record["events"] == [event]
     assert not record["peak_rss_complete"]
     assert "all_converged" not in record
+
+
+def test_evidence_helpers_import_without_unix_resource(monkeypatch):
+    import builtins
+
+    original_import = builtins.__import__
+
+    def unavailable_resource(name, *args, **kwargs):
+        if name == "resource":
+            raise ModuleNotFoundError("resource is unavailable on this platform")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", unavailable_resource)
+    spec = importlib.util.spec_from_file_location(
+        "portable_scalability_evidence",
+        Path(__file__).resolve().parents[1] / "examples" / "scalability.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module._graph_evidence(sparse.csr_matrix((2, 2)))["isolated_vertices"] == 2
