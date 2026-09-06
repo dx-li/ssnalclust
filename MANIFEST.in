@@ -6,4 +6,4 @@ recursive-include .github *.yml *.md
 recursive-include scripts *.py
 recursive-include tests *.py
 
-recursive-include examples/data *.md *.tes *.names *.data
+recursive-include examples/data *.md *.tes *.names *.data *.csv *.txt

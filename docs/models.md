@@ -3,16 +3,30 @@
 Every model uses samples in rows, finite nonnegative symmetric graph weights,
 and an explicit objective. The alternative solvers use primal-dual hybrid
 gradient (PDHG), with steps chosen from a bound on the stacked incidence
-operators. They report the actual primal objective and normalized KKT
-residuals. Structured quadratic models additionally report a primal-dual gap;
-generalized losses report a loss-specific conjugate gap after repairing dual
-feasibility. Both checks must pass for success. Missing-data results currently
-report KKT residuals only, without a dual-gap claim.
+operators. All model families report the actual primal objective, a
+model-specific feasible dual lower bound, a relative gap, and original KKT
+residuals. Missing-data bounds use an equivalent observed-range box;
+structured quadratic models use the stacked quadratic conjugate; generalized
+losses repair fidelity-conjugate feasibility. Both gap and KKT checks must
+pass for success.
 
 Use the low-level functions for full diagnostic access, or the corresponding
 scikit-learn estimators for `fit`, `fit_predict` where applicable, and cloning.
 The estimators emit `ConvergenceWarning` on iteration exhaustion. Functions
 return a result with `converged=False`; callers must inspect it.
+
+The [real-data gallery](gallery.md) connects each method to a runnable example,
+saved diagnostics, and a visualization. The solver families are distinct:
+
+| Objective | Available algorithms | Fusion norms |
+| --- | --- | --- |
+| Complete weighted squared loss | SSNAL | `l2` |
+| Complete weighted squared loss | ADMM, AMA, accelerated AMA (`fama`) | `l1`, `l2`, `linf` |
+| Missing, Huber, logistic, Poisson fidelity | PDHG | `l1`, `l2`, `linf` |
+| Feature-sparse clustering and biclustering | PDHG | Euclidean group penalties |
+
+The alternative-model PDHG solvers are not SSNAL variants. See the
+[classical-solver comparison](gallery_solvers.md) for the complete-data methods.
 
 ## Missing entries
 
@@ -55,6 +69,7 @@ gammas and an explicit fixed graph. Use an exogenous graph, or construct one
 without held-out feature values. A graph built from the full target data can
 leak information; the selector cannot infer its provenance. No internal
 preprocessing is performed. See [missing_usage.py](../examples/missing_usage.py).
+The [missing-data gallery](gallery_missing.md) provides a real-data walkthrough.
 
 ## Feature-sparse clustering
 
@@ -79,7 +94,8 @@ original_coordinates = fit.centers_ + fit.offset_
 print(fit.feature_norms_)
 ```
 
-See [structured_usage.py](../examples/structured_usage.py) for a runnable example.
+See [structured_usage.py](../examples/structured_usage.py) for a runnable example
+and the [structured-model gallery](gallery_structured.md) for real-data visuals.
 
 ## Biclustering
 
@@ -99,6 +115,7 @@ Disabling column fusion reduces to ordinary row clustering.
 `ConvexBiclustering.fit` exposes `centers_`, `row_labels_`, `column_labels_`,
 `n_row_clusters_`, and `n_column_clusters_`. Numerical row and column labels
 use Euclidean centroid thresholds independently.
+The [structured-model gallery](gallery_structured.md) illustrates both axes.
 
 ## Robust and generalized fidelities
 
@@ -130,7 +147,8 @@ expected_counts = fit.fitted_means_
 ```
 
 See [generalized_usage.py](../examples/generalized_usage.py) for runnable
-Huber, binary, and count examples.
+Huber, binary, and count examples, and the
+[generalized-loss gallery](gallery_generalized.md) for real-data applications.
 
 ## Numerical certificates
 

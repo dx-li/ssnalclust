@@ -17,7 +17,7 @@ cannot establish adoption.
 | Scientific accuracy | Feasible primal/dual objectives and KKT; failure status; actual returned-array certificate | Analytic weighted two-point, invariance tests, extreme-scale and precision regressions |
 | Sparse graph support | Sparse incidence, custom dense/sparse adjacency, kNN, MST, kNN+MST, local scales | `test_graph.py`, `test_graph_extra.py`: reference graph computations, duplicates, connectivity and 100k-node sparse graph |
 | sklearn interface | Cloneable transductive clusterer, pipelines, fitted attributes; model-specific estimators | `test_estimator.py`, `test_model_estimators.py`; standard checks with documented fidelity-weight equivalence exception |
-| Paths | Fixed graph, primal/dual warm starts, path summaries preserving splits | Cold/warm agreement, `test_path.py` known fusions and synthetic split transitions |
+| Paths | Fixed graph, primal/dual warm starts, streamed results and summaries preserving splits | Cold/warm agreement, known fusions and splits, weak-reference lifetime tests, recorded stream/list parity |
 | Weighted fidelity | Strictly positive sample masses on fixed graph | Weighted oracle, analytic formula, weighted-mean tests |
 | Missing data | Masked squared loss, explicit graph, no hidden ridge, component identifiability | `test_missing.py`: masked oracle, ignored-entry invariance, nonunique solution interpretation |
 | Feature selection | Centered feature-group sparse convex clustering | `test_structured.py`: independent oracle, alpha-zero reduction, feature elimination |
@@ -25,11 +25,19 @@ cannot establish adoption.
 | Robust/generalized fidelity | Huber, Bernoulli-logit, Poisson-log-intensity | `test_generalized.py`: loss-specific oracle, proximal and boundary tests |
 | Gamma selection | Reproducible held-out-entry MSE and full-data refit | `test_selection.py`: masked-oracle scores, withheld-value erasure, identifiability, nonconvergence rejection |
 | Distribution and examples | src-layout package, license/citation, wheel/sdist, CI, runnable scripts | Build/install checks and examples for every model family |
-| Initial performance evidence | Reproducible graph/solver time, traced allocation peak, iterations and achieved accuracy | `examples/benchmark.py`, recorded `benchmark_results.jsonl`; 20k-node isolated-component regressions |
+| Performance evidence | Graph/solver timing, process peak RSS, Newton profiling, achieved accuracy and long-path retention | Recorded scalability, Newton, high-dimensional and streaming studies; initial traced-allocation benchmark |
 
 See `models.md` and public docstrings for exact objectives, supported options,
-and limitations. Missing-data/structured/generalized results report their own
-KKT conditions, not an inappropriate complete-data squared-loss dual gap.
+and limitations. Missing-data, structured and generalized results require
+both original KKT conditions and model-specific relative gaps. Their feasible
+lower bounds use an equivalent observed-range box, a stacked quadratic
+conjugate, or the actual fidelity conjugate, respectively.
+
+The [real-data method gallery](gallery.md) links runnable solver/model examples
+to their visualizations and diagnostics. The [Digits](digits_study.md),
+[Wine](wine_holdout.md) and [corrected stability](stability_study.md) studies
+retain scientifically unsuccessful selections alongside numerical success.
+Corrected stability currently lives in an example workflow, not the public API.
 
 ## Explicit limitations and future research engineering
 
@@ -37,9 +45,13 @@ The current implementation does not claim to reproduce the original paper's
 200,000-sample runtime. SSNAL is matrix free in its Newton solve; ADMM uses a
 sparse factorization that can fill in. kNN queries can deteriorate in high
 feature dimensions. Exact MST graph construction is quadratic in memory.
-Benchmark allocation peaks use tracemalloc and therefore omit some native
-allocations. Additional process-isolated peak-RSS and larger-scale benchmarks
-would improve performance characterization.
+The initial benchmark's allocation peaks use tracemalloc and omit some native
+allocations. Subsequent [scalability](scalability.md),
+[Newton](newton_performance.md), [high-dimensional](high_dimensional.md) and
+[streaming-memory](streaming_memory.md) studies record native process peak RSS.
+They include a converged 50,000-sample sparse case and long-path retention
+measurements, not portable runtime guarantees. Broader graph structures,
+hardware and model families still need performance characterization.
 
 The following are future extensions, not claims of implemented functionality:
 
@@ -50,9 +62,13 @@ The following are future extensions, not claims of implemented functionality:
   numerical and hardware benchmarking.
 - Multi-view and tensor co-clustering, compositional and other domain-specific
   losses, and public custom-loss/operator protocols backed by concrete uses.
-- Stability selection and justified information criteria; current model
-  selection uses held-out entries with an explicitly supplied fixed graph.
-- Rich plotting/notebook galleries and broader real-dataset studies.
+- A public partition-stability selector and justified information criteria.
+  The public selector currently uses held-out entries with an explicitly
+  supplied fixed graph; the completed example-level stability study does not
+  establish general recovery or selection consistency.
+- Broader real-dataset validation, model-selection sensitivity and independent
+  evaluation beyond the existing galleries and recorded studies. Illustrative
+  examples alone do not establish scientific recovery or recommended defaults.
 
 Biconvex metric learning and nonconvex fusion penalties have different global
 optimality guarantees and should not be silently presented as globally convex

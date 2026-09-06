@@ -1,0 +1,112 @@
+{
+  "status": "completed",
+  "smoke": false,
+  "samples": 178,
+  "target": "magnesium",
+  "target_scale": "original Wine measurement units; no target standardization",
+  "graph_covariates": [
+    "alcohol",
+    "proline"
+  ],
+  "neighbors": 10,
+  "bandwidth": 0.32275389816747585,
+  "graph_components": 1,
+  "graph_edges": 1080,
+  "gammas": [
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "random_state": 41,
+  "validation_fraction": 0.1,
+  "tol": 1e-06,
+  "max_iter": 20000,
+  "data_sha256": "6be6b1203f3d51df0b553a70e57b8a723cd405683958204f96d23d7cd6aea659",
+  "source_sha256": "3a08b0a2d6b5a9380df008151b1ae254eecf9f8d5c9cb09181b33e4606769ec3",
+  "preprocessing_sha256": "e1d7b2bb000ac51fedb31eef99c165f412210e67567a9a70aedcfac07a017547",
+  "solver_source_sha256": {
+    "__init__.py": "f277faf5745b749dc827125d487a8bd8a17c981fb44cb81f7e6b4102aae61351",
+    "estimator.py": "54c09ec0977dba6cbd80b81dfebfbe0639d175b0a21b40216d8a92727c2f9ab5",
+    "generalized.py": "86e4f4b141e2eae761cef34e0b7f9f7b88013be8e8a78e8b9c48f8d986b320aa",
+    "graph.py": "3e446209bf43eefa67926eca75f994a0d8c5e6d5d81b0ec93e97607a94f0b39f",
+    "graph_extra.py": "22b320de3b3fc0cd4b0f6155e58bb2053de08210ddd9c5fb4bf24f9ff43d2333",
+    "legacy.py": "7a2f6b56b385f99bdee5f689b162815660dbea0134116dafa17919e91598c5d6",
+    "missing.py": "313e0db53311298fd148f293df74ea8175f25317c4860d7a498609a78b79a329",
+    "model_estimators.py": "a0d2d71c4c5b4d62c50ce6a3dce145081ce5ec6c123326a653decf433e27c7a9",
+    "path.py": "f27e8ea4b7ad3db5049cbb6435cfb64a5719ef02acd360d63718abf40252232a",
+    "problem.py": "fd8f42fa3cc2a18fadbcdd94a235a4f681b64c281a2f2e68c98b81f7f5f12341",
+    "prox.py": "f5a96ff9214dbaf31c025f1cf3d8f282f64f991112cce8ade49ad251e9506baa",
+    "selection.py": "2026c8652e152c8101ee7b8f75452ee75e8e3ec22f905377476051748102af23",
+    "solvers.py": "8af9e654f36d213bef7133fa8ee535ce1fc6284544711ddf31a0389baf342473",
+    "structured.py": "1b3e775e7c46f77349eed778c047256d8c22c96f5d62f4dd72673e9902c91b41"
+  },
+  "missingness": "simulated entry holdout on complete real measurements",
+  "selected_index": 0,
+  "selected_gamma": 0.1,
+  "validation_count": 17,
+  "training_mean": 99.4223602484472,
+  "baseline_mse": 289.70414630880714,
+  "selected_mse": 264.9453322581186,
+  "candidates": [
+    {
+      "gamma": 0.1,
+      "mse": 264.9453322581186,
+      "objective": 719.7274739712008,
+      "dual_objective": 719.7261212211122,
+      "gap": 0.0013527500884097014,
+      "relative_gap": 9.391139658539972e-07,
+      "kkt_residual": 9.726971233158502e-07,
+      "converged": true,
+      "n_iter": 1357,
+      "certificate_model": "observed_range_box"
+    },
+    {
+      "gamma": 1.0,
+      "mse": 266.3638551884203,
+      "objective": 5727.801392776226,
+      "dual_objective": 5727.79711188358,
+      "gap": 0.004280892646506826,
+      "relative_gap": 3.7366175001817814e-07,
+      "kkt_residual": 9.624527380558468e-07,
+      "converged": true,
+      "n_iter": 476,
+      "certificate_model": "observed_range_box"
+    },
+    {
+      "gamma": 10.0,
+      "mse": 273.32718261958564,
+      "objective": 13631.220691649669,
+      "dual_objective": 13631.216297271141,
+      "gap": 0.004394378530464884,
+      "relative_gap": 1.611821184632976e-07,
+      "kkt_residual": 9.838557199555133e-07,
+      "converged": true,
+      "n_iter": 240,
+      "certificate_model": "observed_range_box"
+    },
+    {
+      "gamma": 100.0,
+      "mse": 289.70406644805297,
+      "objective": 15599.670016416138,
+      "dual_objective": 15599.63903559459,
+      "gap": 0.030980821549248642,
+      "relative_gap": 9.92965213825408e-07,
+      "kkt_residual": 1.82328950942744e-07,
+      "converged": true,
+      "n_iter": 918,
+      "certificate_model": "observed_range_box"
+    }
+  ],
+  "full_refit": {
+    "objective": 791.4901598159505,
+    "dual_objective": 791.4901586197683,
+    "gap": 1.1961821421649585e-06,
+    "relative_gap": 7.551748770125277e-10,
+    "kkt_residual": 8.924856201289026e-07,
+    "converged": true,
+    "n_iter": 92,
+    "certificate_model": "observed_range_box"
+  },
+  "arrays_sha256": "9d641b44988a2a7bfa240dbe753d00cc76147199cd46d2ec78a56cc52fad2744"
+}

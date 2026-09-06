@@ -1,0 +1,152 @@
+{
+  "status": "completed",
+  "smoke": false,
+  "versions": {
+    "ssnalclust": "0.1.0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.0",
+    "matplotlib": "3.11.1"
+  },
+  "source_sha256": {
+    "__init__.py": "f277faf5745b749dc827125d487a8bd8a17c981fb44cb81f7e6b4102aae61351",
+    "estimator.py": "54c09ec0977dba6cbd80b81dfebfbe0639d175b0a21b40216d8a92727c2f9ab5",
+    "generalized.py": "86e4f4b141e2eae761cef34e0b7f9f7b88013be8e8a78e8b9c48f8d986b320aa",
+    "graph.py": "3e446209bf43eefa67926eca75f994a0d8c5e6d5d81b0ec93e97607a94f0b39f",
+    "graph_extra.py": "22b320de3b3fc0cd4b0f6155e58bb2053de08210ddd9c5fb4bf24f9ff43d2333",
+    "legacy.py": "7a2f6b56b385f99bdee5f689b162815660dbea0134116dafa17919e91598c5d6",
+    "missing.py": "313e0db53311298fd148f293df74ea8175f25317c4860d7a498609a78b79a329",
+    "model_estimators.py": "a0d2d71c4c5b4d62c50ce6a3dce145081ce5ec6c123326a653decf433e27c7a9",
+    "path.py": "f27e8ea4b7ad3db5049cbb6435cfb64a5719ef02acd360d63718abf40252232a",
+    "problem.py": "fd8f42fa3cc2a18fadbcdd94a235a4f681b64c281a2f2e68c98b81f7f5f12341",
+    "prox.py": "f5a96ff9214dbaf31c025f1cf3d8f282f64f991112cce8ade49ad251e9506baa",
+    "selection.py": "2026c8652e152c8101ee7b8f75452ee75e8e3ec22f905377476051748102af23",
+    "solvers.py": "8af9e654f36d213bef7133fa8ee535ce1fc6284544711ddf31a0389baf342473",
+    "structured.py": "1b3e775e7c46f77349eed778c047256d8c22c96f5d62f4dd72673e9902c91b41"
+  },
+  "harness_sha256": "4e80ab46c2c6fdeee873cb985f3c50e2adab6923acdefab13722368580aa1aa6",
+  "preprocessing_sha256": "e1d7b2bb000ac51fedb31eef99c165f412210e67567a9a70aedcfac07a017547",
+  "tol": 1e-06,
+  "generalized_max_iter": 20000,
+  "cases": {
+    "huber": {
+      "loss": "huber",
+      "gamma": 3.0,
+      "huber_delta": 1.0,
+      "samples": 178,
+      "features": 13,
+      "graph": "union 10-neighbor, median positive distance Gaussian",
+      "bandwidth": 2.4446746660667307,
+      "preprocessing": "all selected feature rows standardized with population mean/std",
+      "diagnostics": {
+        "converged": true,
+        "objective": 886.5386407415973,
+        "dual_objective": 886.5383698869691,
+        "gap": 0.00027085462702871547,
+        "relative_gap": 1.5267354540192706e-07,
+        "kkt_residual": 9.941271278688707e-07,
+        "n_iter": 1372,
+        "seconds": 0.8986301254481077,
+        "max_iter": 20000
+      },
+      "squared_comparison": {
+        "converged": true,
+        "objective": 973.0292195408066,
+        "dual_objective": 973.0290724271817,
+        "gap": 0.00014711362472291499,
+        "relative_gap": 7.555686716200981e-08,
+        "kkt_residual": 7.749692676922649e-07,
+        "n_iter": 31,
+        "seconds": 0.21429866598919034
+      },
+      "data_sha256": "6be6b1203f3d51df0b553a70e57b8a723cd405683958204f96d23d7cd6aea659",
+      "data_file": "wine.data",
+      "arrays": {
+        "raw_features": "huber_raw_features",
+        "selected_ids": "huber_selected_ids",
+        "optimization_data": "huber_optimization_data",
+        "feature_means": "huber_feature_means",
+        "feature_scales": "huber_feature_scales",
+        "centers": "huber_centers",
+        "fitted_means": "huber_fitted_means",
+        "dual": "huber_dual",
+        "squared_centers": "huber_squared_centers",
+        "squared_dual": "huber_squared_dual",
+        "graph_indptr": "huber_graph_indptr",
+        "graph_indices": "huber_graph_indices",
+        "graph_data": "huber_graph_data"
+      }
+    },
+    "logistic": {
+      "loss": "logistic",
+      "gamma": 1.0,
+      "samples": 232,
+      "features": 16,
+      "graph": "connected union 10-neighbor plus MST edges; Gaussian bandwidth 2",
+      "bandwidth": 2.0,
+      "excluded_constant_columns": [],
+      "n_clusters": 10,
+      "cluster_tol": 0.0001,
+      "row_selection": "complete rows in original file order",
+      "diagnostics": {
+        "converged": true,
+        "objective": 1908.6115710473687,
+        "dual_objective": 1908.61154969108,
+        "gap": 2.1356288832286996e-05,
+        "relative_gap": 5.59325323768839e-09,
+        "kkt_residual": 9.971185665681158e-07,
+        "n_iter": 984,
+        "seconds": 5.355470499955118,
+        "max_iter": 20000
+      },
+      "data_sha256": "c87c14110a5ba91d4a1e313ec7392824458152bf071fa5f5452340488337936e",
+      "data_file": "house-votes-84.data",
+      "arrays": {
+        "optimization_data": "logistic_optimization_data",
+        "selected_ids": "logistic_selected_ids",
+        "retained_issue_columns": "logistic_retained_issue_columns",
+        "centers": "logistic_centers",
+        "fitted_means": "logistic_fitted_means",
+        "dual": "logistic_dual",
+        "labels": "logistic_labels",
+        "graph_indptr": "logistic_graph_indptr",
+        "graph_indices": "logistic_graph_indices",
+        "graph_data": "logistic_graph_data"
+      }
+    },
+    "poisson": {
+      "loss": "poisson",
+      "gamma": 100.0,
+      "samples": 90,
+      "features": 1,
+      "graph": "unit chain in original chronological order",
+      "count_units": "raw daily cnt rentals",
+      "date_start": "2011-01-01",
+      "date_end": "2011-03-31",
+      "diagnostics": {
+        "converged": true,
+        "objective": -973160.7937256921,
+        "dual_objective": -973160.9358478816,
+        "gap": 0.14212218968963608,
+        "relative_gap": 7.302087548490692e-08,
+        "kkt_residual": 9.99959596090577e-07,
+        "n_iter": 50766,
+        "seconds": 70.74672725005075,
+        "max_iter": 100000
+      },
+      "data_sha256": "a6bcf826782d3c0fbfdcbeead17cd0884185a0dafe8ff10cd48a874ee7ba18be",
+      "data_file": "bike_day.csv",
+      "arrays": {
+        "optimization_data": "poisson_optimization_data",
+        "dates": "poisson_dates",
+        "selected_ids": "poisson_selected_ids",
+        "centers": "poisson_centers",
+        "fitted_means": "poisson_fitted_means",
+        "dual": "poisson_dual",
+        "graph_indptr": "poisson_graph_indptr",
+        "graph_indices": "poisson_graph_indices",
+        "graph_data": "poisson_graph_data"
+      }
+    }
+  }
+}

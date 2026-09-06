@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add offline real-data galleries with figures and saved diagnostics for all
+  classical solver/norm combinations, missing entries, feature-sparse
+  clustering, biclustering, and Huber/logistic/Poisson fidelities. Exercise
+  reduced gallery runs in Linux and installed-wheel platform CI, and clarify
+  model-specific certificates and illustrative parameter choices.
+
 - Evaluate corrected partition stability with a frozen simulation protocol,
   independent saved-array audits and explicit degenerate/no-selection gates.
   Preserve Gaussian-control and overlap failures instead of introducing an

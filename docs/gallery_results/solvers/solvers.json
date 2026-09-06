@@ -1,0 +1,462 @@
+{
+  "status": "completed",
+  "smoke": false,
+  "samples": 178,
+  "features": 13,
+  "gamma": 2.5,
+  "tol": 1e-06,
+  "max_iter": 50000,
+  "cluster_tol": 0.0001,
+  "neighbors": 10,
+  "bandwidth": 2.4446746660667307,
+  "edges": 1231,
+  "components": 1,
+  "data_sha256": "6be6b1203f3d51df0b553a70e57b8a723cd405683958204f96d23d7cd6aea659",
+  "source_sha256": "b031ec173d12151cb5f1bece7cc6e86c3f36c709fdde7e433ecd07b45f71fd2d",
+  "helper_sha256": "e1d7b2bb000ac51fedb31eef99c165f412210e67567a9a70aedcfac07a017547",
+  "versions": {
+    "ssnalclust": "0.1.0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.0",
+    "matplotlib": "3.11.1"
+  },
+  "fits": [
+    {
+      "name": "ssnal_l2",
+      "solver": "ssnal",
+      "penalty": "l2",
+      "n_clusters": 17,
+      "objective": 924.6164755794995,
+      "dual_objective": 924.616334046978,
+      "gap": 0.00014153252158364155,
+      "relative_gap": 7.649443942798418e-08,
+      "center_error_bound": 0.016824536937677752,
+      "kkt_residual": 6.928948109736971e-07,
+      "converged": true,
+      "n_iter": 24
+    },
+    {
+      "name": "admm_l2",
+      "solver": "admm",
+      "penalty": "l2",
+      "n_clusters": 17,
+      "objective": 924.6164431933369,
+      "dual_objective": 924.6163340527702,
+      "gap": 0.00010914056651508922,
+      "relative_gap": 5.898747868770027e-08,
+      "center_error_bound": 0.014774340358546587,
+      "kkt_residual": 9.869981652073577e-07,
+      "converged": true,
+      "n_iter": 93
+    },
+    {
+      "name": "ama_l2",
+      "solver": "ama",
+      "penalty": "l2",
+      "n_clusters": 17,
+      "objective": 924.6165273823005,
+      "dual_objective": 924.6163340341346,
+      "gap": 0.0001933481660219252,
+      "relative_gap": 1.0449936873021951e-07,
+      "center_error_bound": 0.01966459590339579,
+      "kkt_residual": 9.993641810365714e-07,
+      "converged": true,
+      "n_iter": 6351
+    },
+    {
+      "name": "fama_l2",
+      "solver": "fama",
+      "penalty": "l2",
+      "n_clusters": 17,
+      "objective": 924.6166831305366,
+      "dual_objective": 924.6163340409983,
+      "gap": 0.00034908953832012694,
+      "relative_gap": 1.886732833542138e-07,
+      "center_error_bound": 0.026423078485298682,
+      "kkt_residual": 9.995193991873955e-07,
+      "converged": true,
+      "n_iter": 1586
+    },
+    {
+      "name": "admm_l1",
+      "solver": "admm",
+      "penalty": "l1",
+      "n_clusters": 7,
+      "objective": 1139.278205469296,
+      "dual_objective": 1139.2776952339027,
+      "gap": 0.0005102353929934764,
+      "relative_gap": 2.2383105096746196e-07,
+      "center_error_bound": 0.03194480843559643,
+      "kkt_residual": 9.960478930148289e-07,
+      "converged": true,
+      "n_iter": 207
+    },
+    {
+      "name": "admm_linf",
+      "solver": "admm",
+      "penalty": "linf",
+      "n_clusters": 43,
+      "objective": 716.1369597027299,
+      "dual_objective": 716.1368186265644,
+      "gap": 0.00014107616550082752,
+      "relative_gap": 9.84293214833484e-08,
+      "center_error_bound": 0.016797390600972968,
+      "kkt_residual": 9.904756736749945e-07,
+      "converged": true,
+      "n_iter": 171
+    }
+  ],
+  "paths": [
+    {
+      "gamma": 0.0,
+      "n_clusters": 178,
+      "objective": 0.0,
+      "converged": true,
+      "n_iter": 0,
+      "kkt_residual": 0.0,
+      "merges": [],
+      "splits": [],
+      "dual_objective": 0.0,
+      "gap": 0.0,
+      "relative_gap": 0.0,
+      "center_error_bound": 0.0
+    },
+    {
+      "gamma": 0.25,
+      "n_clusters": 178,
+      "objective": 328.14042241013016,
+      "converged": true,
+      "n_iter": 3,
+      "kkt_residual": 2.764079425368946e-07,
+      "merges": [],
+      "splits": [],
+      "dual_objective": 328.1404224092758,
+      "gap": 8.543052079849852e-10,
+      "relative_gap": 1.2997567397840622e-12,
+      "center_error_bound": 4.133534100464118e-05
+    },
+    {
+      "gamma": 1.0,
+      "n_clusters": 61,
+      "objective": 696.2300522538632,
+      "converged": true,
+      "n_iter": 49,
+      "kkt_residual": 9.654274436720353e-07,
+      "merges": [
+        [
+          0,
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58
+          ]
+        ],
+        [
+          25,
+          [
+            82,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            105,
+            107,
+            113,
+            114
+          ]
+        ],
+        [
+          39,
+          [
+            103,
+            104,
+            106,
+            108,
+            116,
+            119
+          ]
+        ],
+        [
+          42,
+          [
+            111,
+            125
+          ]
+        ],
+        [
+          57,
+          [
+            131,
+            132,
+            133,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166,
+            167,
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            174,
+            175,
+            176,
+            177
+          ]
+        ]
+      ],
+      "splits": [],
+      "dual_objective": 696.2300406582891,
+      "gap": 1.1595574195260719e-05,
+      "relative_gap": 8.321425388672209e-09,
+      "center_error_bound": 0.004815718886160346
+    },
+    {
+      "gamma": 2.5,
+      "n_clusters": 17,
+      "objective": 924.6164511089489,
+      "converged": true,
+      "n_iter": 23,
+      "kkt_residual": 5.963160133570559e-07,
+      "merges": [
+        [
+          0,
+          [
+            0,
+            1,
+            16
+          ]
+        ],
+        [
+          4,
+          [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            15,
+            17,
+            18,
+            19,
+            22,
+            23,
+            24,
+            25,
+            27,
+            28,
+            29,
+            30,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            42,
+            43,
+            44,
+            45,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55
+          ]
+        ],
+        [
+          11,
+          [
+            26,
+            46,
+            56,
+            57,
+            59,
+            60
+          ]
+        ]
+      ],
+      "splits": [],
+      "dual_objective": 924.6163340499072,
+      "gap": 0.00011705904170130086,
+      "relative_gap": 6.326719677667505e-08,
+      "center_error_bound": 0.015300917730731112
+    },
+    {
+      "gamma": 5.0,
+      "n_clusters": 9,
+      "objective": 1098.5373048708827,
+      "converged": true,
+      "n_iter": 28,
+      "kkt_residual": 5.270071328611619e-07,
+      "merges": [
+        [
+          1,
+          [
+            1,
+            4,
+            7,
+            8,
+            9,
+            14
+          ]
+        ],
+        [
+          5,
+          [
+            6,
+            10,
+            12
+          ]
+        ],
+        [
+          6,
+          [
+            11,
+            16
+          ]
+        ]
+      ],
+      "splits": [],
+      "dual_objective": 1098.5371181916573,
+      "gap": 0.000186679225535122,
+      "relative_gap": 8.492852815921718e-08,
+      "center_error_bound": 0.019322485633847527
+    }
+  ],
+  "graph_variants": [
+    {
+      "name": "Gaussian kNN",
+      "edges": 1231,
+      "components": 1
+    },
+    {
+      "name": "Minimum spanning tree",
+      "edges": 177,
+      "components": 1
+    },
+    {
+      "name": "Connected kNN",
+      "edges": 1231,
+      "components": 1
+    },
+    {
+      "name": "Local scales",
+      "edges": 1231,
+      "components": 1
+    }
+  ],
+  "l2_agreement": [
+    {
+      "method": "admm",
+      "center_distance": 5.499500115230017e-05,
+      "summed_error_bounds": 0.03159887729622434,
+      "within_bounds": true
+    },
+    {
+      "method": "ama",
+      "center_distance": 2.3031415549232966e-06,
+      "summed_error_bounds": 0.03648913284107354,
+      "within_bounds": true
+    },
+    {
+      "method": "fama",
+      "center_distance": 1.2893976727309153e-05,
+      "summed_error_bounds": 0.043247615422976435,
+      "within_bounds": true
+    }
+  ]
+}
