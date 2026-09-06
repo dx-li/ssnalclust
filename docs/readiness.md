@@ -29,7 +29,9 @@ ledger, not a declaration of completion.
   establish superiority over a converged SSNAL run.
 - Profile sparse graphs at 1k, 5k, 10k and beyond before extrapolating the
   paper's much larger experiments. Track dimensionality, graph parameters,
-  numerical-library threads, source hashes, and machine details.
+  numerical-library threads, source hashes, and machine details. A subsequent
+  [Newton study](newton_performance.md) now records convergence at 50k and
+  lower measured solve time at 5k/10k; larger and more varied cases remain.
 - Reuse validated graphs and sparse factorizations across path points, and
   stream results for long paths. Further SSNAL work should follow measured
   Newton/CG costs; adaptive sieving needs full-problem verification and must

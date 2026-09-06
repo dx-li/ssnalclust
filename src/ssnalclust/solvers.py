@@ -105,28 +105,36 @@ def _reduced(x, u, z, b, radii, sigma, mass):
 def _newton_operator(u, z, b, radii, sigma, mass):
     """Generalized Hessian M + sigma B.T J_projection B, matrix free."""
     q = sigma * (b @ u) + z
-    norms = np.linalg.norm(q, axis=1)
-    outside = norms > radii
+    if not np.isfinite(q).all():
+        raise ValueError("Newton linearization overflow; rescale data or sigma")
+    # Normalize before taking a norm: q may be finite even when squaring it
+    # overflows or underflows. Compare the radius in the same scaled units.
+    magnitude = np.max(np.abs(q), axis=1)
     unit = np.zeros_like(q)
-    np.divide(q, norms[:, None], out=unit, where=norms[:, None] > 0)
-    scale = np.ones_like(norms)
-    np.divide(radii, norms, out=scale, where=outside)
+    np.divide(q, magnitude[:, None], out=unit, where=magnitude[:, None] > 0)
+    lengths = np.sqrt(np.einsum("ij,ij->i", unit, unit))
+    scaled_radii = np.full_like(lengths, np.inf)
+    with np.errstate(over="ignore"):
+        np.divide(radii, magnitude, out=scaled_radii, where=magnitude > 0)
+    outside = lengths > scaled_radii
+    scale = np.ones_like(lengths)
+    np.divide(scaled_radii, lengths, out=scale, where=outside)
+    np.divide(unit, lengths[:, None], out=unit, where=lengths[:, None] > 0)
+    # Zero interior directions makes the rank-one correction vanish there.
+    # At positive-radius equality we retain the identity Jacobian selection.
+    unit[~outside] = 0
     # A radius-zero ball is a constant map, even at its origin.
     scale[radii == 0] = 0
 
     def matvec(direction):
         direction = direction.reshape(u.shape)
         bd = b @ direction
-        transformed = bd.copy()
-        transformed[outside] -= unit[outside] * np.sum(
-            unit[outside] * bd[outside], axis=1, keepdims=True
-        )
+        radial = np.einsum("ij,ij->i", unit, bd)
+        transformed = bd - unit * radial[:, None]
         transformed *= scale[:, None]
         return (mass * direction + sigma * (b.T @ transformed)).ravel()
 
-    diagonal_edges = np.ones_like(q)
-    diagonal_edges[outside] -= unit[outside] ** 2
-    diagonal_edges *= scale[:, None]
+    diagonal_edges = scale[:, None] * (1 - unit**2)
     diagonal = mass + sigma * (b.power(2).T @ diagonal_edges)
     operator = LinearOperator((u.size, u.size), matvec=matvec, dtype=float)
     preconditioner = LinearOperator(
