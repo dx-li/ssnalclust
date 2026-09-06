@@ -21,6 +21,15 @@ jobs:
       - run: python examples/repeated_solves.py
       - run: python examples/recovery_study.py --smoke --self-test
       - run: python examples/plot_clustering_paths.py --output /tmp/clustering_paths.png
+      - name: Run offline digits smoke study and plot its saved results
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+          MPLBACKEND: Agg
+        run: |
+          python examples/digits_study.py --smoke --neighbors 10 20 --output build/artifacts/digits-smoke.json --arrays build/artifacts/digits-smoke.npz
+          python examples/plot_digits_study.py build/artifacts/digits-smoke.json --output-dir build/artifacts/digits-smoke-plots
       - run: python -m build
   minimum-dependencies:
     runs-on: ubuntu-latest
@@ -142,6 +151,15 @@ jobs:
           python examples/repeated_solves.py
           python examples/recovery_study.py --smoke --self-test
           python examples/plot_clustering_paths.py --output build/artifacts/clustering_paths.png
+      - name: Run offline digits smoke study and plot its saved results
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+          MKL_NUM_THREADS: '1'
+          MPLBACKEND: Agg
+        run: |
+          python examples/digits_study.py --smoke --neighbors 10 20 --output build/artifacts/digits-smoke.json --arrays build/artifacts/digits-smoke.npz
+          python examples/plot_digits_study.py build/artifacts/digits-smoke.json --output-dir build/artifacts/digits-smoke-plots
       - name: Verify isolated wheel and source installations
         run: >-
           python scripts/check_distribution.py dist/ssnalclust-*.whl

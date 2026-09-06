@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a frozen Optical Digits protocol, offline data with attribution, atomic
+  checkpoints, retained full-data fits and cross-checks, and figures showing
+  graph sensitivity and a silhouette selection failure.
+
 - Add Windows and macOS installed-wheel CI, scientific user workflows and
   isolated distribution checks, with retained environment and test evidence.
 
