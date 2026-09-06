@@ -32,6 +32,9 @@ grid, including failures to recover clusters despite certified optimization.
 The [Optical Digits study](docs/digits_study.md) fits all 1,797 images using a
 frozen, label-free selection protocol and retains a failed silhouette selection
 alongside successful numerical cross-checks.
+The [Wine entry-holdout study](docs/wine_holdout.md) adds training-only
+preprocessing and graph construction; its lower reconstruction tuning score
+still selects singleton clusters, illustrating a different selection limit.
 The [external implementation study](docs/external_reference.md) compares
 solutions with a pinned R/C reference and retains inaccurate reference stops.
 The [readiness ledger](docs/readiness.md) tracks the broader work still needed.

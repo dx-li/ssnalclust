@@ -23,6 +23,29 @@ class SelectionResult:
     best_result: MissingResult
 
 
+def _finite_heldout_mse(predictions, targets):
+    """Compute finite MSE without overflowing a representable mean of squares."""
+    predictions = np.asarray(predictions, dtype=float)
+    targets = np.asarray(targets, dtype=float)
+    if not np.isfinite(predictions).all() or not np.isfinite(targets).all():
+        raise ValueError("held-out MSE requires finite predictions and targets")
+    with np.errstate(over="ignore", invalid="ignore"):
+        residuals = predictions - targets
+    if not np.isfinite(residuals).all():
+        raise ValueError("held-out residuals overflow; rescale the data")
+    scale = float(np.max(np.abs(residuals)))
+    if scale == 0:
+        return 0.0
+    # Normalize before either squaring or summing; intermediate sums of the
+    # original squares can overflow even when their mean is representable.
+    with np.errstate(over="ignore", invalid="ignore"):
+        rmse = scale * np.sqrt(np.mean((residuals / scale) ** 2))
+        mse = float(rmse * rmse)
+    if not np.isfinite(mse):
+        raise ValueError("held-out MSE is not representable as a finite float; rescale the data")
+    return mse
+
+
 def select_gamma(
     X, gammas, weights, validation_fraction=0.1, random_state=None, **missing_solver_options
 ):
@@ -61,6 +84,11 @@ def select_gamma(
     This is a single holdout split, not an unbiased final performance estimate.
     Entries are split jointly once, then the same training data are used at
     every strength. Unidentifiable data and nonconverged fits raise errors.
+    Nonfinite held-out predictions, overflowing residuals, or an unrepresentable
+    MSE raise ValueError before selection and refitting; candidates are never
+    silently discarded. Missing-coordinate optima need not be unique: scores
+    evaluate solve_missing's deterministic initialization and observed-range
+    box convention, not a uniquely determined imputation.
     """
     try:
         raw = np.asarray(X)
@@ -131,7 +159,7 @@ def select_gamma(
                 f"holdout fit did not converge for gamma={gamma}; increase max_iter or relax tol"
             )
         results.append(result)
-        errors.append(float(np.mean((result.centers[validation] - x[validation]) ** 2)))
+        errors.append(_finite_heldout_mse(result.centers[validation], x[validation]))
     best = int(np.argmin(errors))
     best_result = solve_missing(
         x, weights, gamma=strengths[best], observed=observed, **missing_solver_options

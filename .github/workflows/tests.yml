@@ -34,6 +34,11 @@ jobs:
         run: |
           python examples/streaming_memory.py --smoke --output build/artifacts/streaming-smoke.jsonl
           python examples/plot_streaming_memory.py build/artifacts/streaming-smoke.jsonl --output build/artifacts/streaming-smoke.png --audit build/artifacts/streaming-smoke-audit.json
+      - name: Run offline Wine holdout smoke study and independent artifact audit
+        run: |
+          python examples/wine_holdout_study.py --smoke --output-dir build/artifacts/wine-holdout
+          python examples/plot_wine_holdout.py build/artifacts/wine-holdout/study.json --output build/artifacts/wine-holdout.png
+          python examples/audit_wine_holdout.py build/artifacts/wine-holdout --output build/artifacts/wine-holdout/audit.json
       - run: python -m build
   minimum-dependencies:
     runs-on: ubuntu-latest
@@ -168,6 +173,11 @@ jobs:
         run: |
           python examples/streaming_memory.py --smoke --output build/artifacts/streaming-smoke.jsonl
           python examples/plot_streaming_memory.py build/artifacts/streaming-smoke.jsonl --output build/artifacts/streaming-smoke.png --audit build/artifacts/streaming-smoke-audit.json
+      - name: Run offline Wine holdout smoke study and independent artifact audit
+        run: |
+          python examples/wine_holdout_study.py --smoke --output-dir build/artifacts/wine-holdout
+          python examples/plot_wine_holdout.py build/artifacts/wine-holdout/study.json --output build/artifacts/wine-holdout.png
+          python examples/audit_wine_holdout.py build/artifacts/wine-holdout --output build/artifacts/wine-holdout/audit.json
       - name: Verify isolated wheel and source installations
         run: >-
           python scripts/check_distribution.py dist/ssnalclust-*.whl

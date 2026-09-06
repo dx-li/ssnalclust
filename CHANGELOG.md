@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Preserve original data and recorded artifact bytes on Windows checkouts,
+  with provenance regressions and stable Python-source line endings.
+
+- Compute held-out MSE with scaled residuals, rejecting invalid scores before
+  selection or refitting, and clarify nonunique-imputation semantics.
+  Add a frozen training-only Wine holdout study with saved edge duals,
+  independent certificate audits, and a retained singleton-selection outcome.
+
 - Release obsolete warm-start buffers and prior yielded results in streamed
   paths before computing the next point, preserving mutation-safe snapshots.
   Measure native memory for streamed versus retained 8–256-point paths, with

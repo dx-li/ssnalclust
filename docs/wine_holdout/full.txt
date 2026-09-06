@@ -1,0 +1,5 @@
+full factor=0.1 fit=completed converged=True
+full factor=0.3 fit=completed converged=True
+full factor=1.0 fit=completed converged=True
+full factor=3.0 fit=completed converged=True
+full factor=10.0 fit=completed converged=True

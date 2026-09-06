@@ -59,6 +59,8 @@ Recovery study <recovery_study>
 Optical Digits study <digits_study>
 Optical Digits protocol <digits_protocol>
 Optical Digits execution <digits_execution>
+Wine held-out-entry study <wine_holdout>
+Wine holdout protocol <heldout_protocol>
 External comparison <external_reference>
 Reference conventions <external_reference_conventions>
 Other implementations <external_reference_candidates>

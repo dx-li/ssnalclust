@@ -1,0 +1,5 @@
+seed=1731 factor=0.1 fit=completed converged=True
+seed=1731 factor=0.3 fit=completed converged=True
+seed=1731 factor=1.0 fit=completed converged=True
+seed=1731 factor=3.0 fit=completed converged=True
+seed=1731 factor=10.0 fit=completed converged=True
