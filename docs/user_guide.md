@@ -7,8 +7,9 @@ strength, graph, data geometry, and numerical labeling threshold.
 
 This guide starts with complete observations and then explains paths,
 certificates, model extensions, and entry holdout validation. The
-[API reference](api.md) lists public functions; the
-[algorithm audit](algorithm_audit.md) derives the corrected SSNAL method.
+[API reference](api.md) lists public functions and the
+[compatibility audit](api_compatibility.md) documents estimator checks and their
+scientific boundaries. The [algorithm audit](algorithm_audit.md) derives the corrected SSNAL method.
 
 ## 1. Define the observations and their geometry
 
@@ -281,8 +282,13 @@ accuracy target, not the underlying objective.
 The alternative solvers use PDHG and report true KKT residuals for their own
 objectives. Feature-sparse clustering and biclustering also report feasible
 primal-dual gaps derived for their stacked penalties, and require both gap
-and KKT tolerances. Missing and generalized fidelities report KKT diagnostics
-without claiming the complete-data quadratic gap. The
+and KKT tolerances. Generalized fidelities use feasible loss-specific conjugate
+certificates. Missing-data fitting derives a lower bound from an equivalent
+observed-range box problem: within each component and feature, clipping to the
+observed range cannot increase the original objective. It also checks the
+original masked model's KKT conditions. All these models require both their
+relative gap and KKT residual to satisfy tolerance. These are model-specific
+certificates, not substitutions of the complete-data quadratic dual. The
 [model definitions](models.md) give full formulas.
 
 | Data or purpose | Entry point | Interpretation of returned centroids |
@@ -371,6 +377,11 @@ after selecting gamma. Use additional validation splits or an external test
 set when the scientific question requires them, with graph and preprocessing
 construction restricted appropriately in each split. The returned masks make
 the actual held-out entries inspectable.
+
+The [moons and circles recovery study](recovery_study.md) separates numerical
+convergence from recovery, reports every fixed-grid point, and documents
+centroid-label sensitivity on concentric components. Its best-over-grid
+scores use ground truth and are explicitly oracle diagnostics.
 
 ## Reporting a reproducible analysis
 

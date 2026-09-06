@@ -29,7 +29,8 @@ def _publish(estimator, result):
     estimator.converged_ = result.converged
     if not result.converged:
         warnings.warn(
-            f"Optimization did not converge (KKT residual {result.kkt_residual:.3g})",
+            f"Optimization did not converge (KKT residual {result.kkt_residual:.3g}, "
+            f"relative gap {result.relative_gap:.3g})",
             ConvergenceWarning,
             stacklevel=3,
         )
@@ -43,8 +44,7 @@ class MissingConvexClustering(ClusterMixin, BaseEstimator):
     fit time through the constructor; building weights from partially observed
     features is deliberately left to the user. NaN and infinite entries are
     missing by default. ``cluster_tol`` determines transitive centroid labels.
-    Learned attributes follow :class:`ConvexClustering` except no dual gap is
-    reported. Missing-coordinate centroids need not be unique.
+    Learned attributes include the equivalent observed-range box dual gap. Missing-coordinate centroids need not be unique.
     """
 
     def __init__(
@@ -66,6 +66,7 @@ class MissingConvexClustering(ClusterMixin, BaseEstimator):
         """Fit using the optional boolean observed-entry mask."""
         from .missing import solve_missing
 
+        _positive(self.cluster_tol, "cluster_tol", allow_zero=True)
         X = validate_data(self, X, dtype=float, ensure_all_finite=False)
         result = solve_missing(
             X, self.weights, self.gamma, self.penalty, self.tol, self.max_iter, observed
@@ -106,6 +107,7 @@ class GeneralizedConvexClustering(ClusterMixin, BaseEstimator):
         """Fit centroids in the loss's natural parameterization."""
         from .generalized import solve_generalized
 
+        _positive(self.cluster_tol, "cluster_tol", allow_zero=True)
         X = validate_data(self, X, dtype=float)
         result = solve_generalized(
             X,
@@ -152,6 +154,7 @@ class SparseConvexClustering(ClusterMixin, BaseEstimator):
         """Center features and jointly fit fusion and feature selection."""
         from .structured import solve_sparse
 
+        _positive(self.cluster_tol, "cluster_tol", allow_zero=True)
         X = validate_data(self, X, dtype=float)
         result = solve_sparse(
             X,
@@ -198,6 +201,7 @@ class ConvexBiclustering(BaseEstimator):
         """Fit a matrix with separate row and column fusion strengths."""
         from .structured import solve_biclustering
 
+        _positive(self.cluster_tol, "cluster_tol", allow_zero=True)
         X = validate_data(self, X, dtype=float)
         result = solve_biclustering(
             X,
