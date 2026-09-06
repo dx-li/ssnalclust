@@ -1,0 +1,22 @@
+{
+  "status": "valid",
+  "selected_factor": 0.3,
+  "factors": [
+    0.1,
+    0.3,
+    1.0,
+    3.0,
+    10.0
+  ],
+  "aggregate_mse": [
+    0.5833287920910284,
+    0.5804420727354984,
+    0.5827157048734631,
+    0.6408017142394676,
+    0.7604349980894303
+  ],
+  "baseline_mse": 1.0186633642518064,
+  "aggregation": "sum squared errors / total held-out entries across draws; repeated entries count repeatedly",
+  "selected_index": 1,
+  "scored_entries": 663
+}

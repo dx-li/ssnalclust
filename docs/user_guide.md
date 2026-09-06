@@ -383,7 +383,10 @@ Scores evaluate the solver's deterministic initialization and observed-range
 box convention; a small objective gap does not bound missing-entry prediction
 error. Nonfinite predictions and unrepresentable MSEs raise before selection
 or refitting. Finite MSE calculation avoids intermediate sum-of-squares
-overflow when the mean itself remains representable.
+overflow when the mean itself remains representable. The executed
+[Wine study](wine_holdout.md) shows why this distinction matters: its
+training-only entry-holdout choice improves reconstruction tuning MSE but
+leaves all full-data observations in singleton clusters.
 
 The [moons and circles recovery study](recovery_study.md) separates numerical
 convergence from recovery, reports every fixed-grid point, and documents

@@ -119,7 +119,7 @@ def make_figure(study, checkpoints):
     ):
         axis.set(title=title, ylabel=ylabel, xlabel="Prespecified gamma factor", xscale="log")
         axis.grid(alpha=0.2)
-    axes[0].legend(frameon=False, fontsize=8)
+    axes[0].legend(frameon=True, framealpha=0.95, facecolor="white", edgecolor="none", fontsize=8)
     fig.suptitle("Wine entry-holdout study" + (" · SMOKE ONLY" if study.get("smoke") else ""))
     footer = "Stars mark the saved tuning choice, never an ARI-based choice. "
     footer += "Repeated tuning draws are not independent test estimates."

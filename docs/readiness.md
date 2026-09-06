@@ -56,7 +56,11 @@ ledger, not a declaration of completion.
   and Iris problems, including an independently detected reference stopping
   defect. The [Optical Digits study](digits_study.md) adds 1,797 images and a
   frozen label-free protocol: numerical cross-checks pass, but one graph
-  produces an almost singleton silhouette selection. Robust model selection,
+  produces an almost singleton silhouette selection. The
+  [Wine entry-holdout study](wine_holdout.md) now also preserves a lower
+  reconstruction tuning score whose selected full fit remains all singletons.
+  Its training-only preprocessing and independent saved-dual audit strengthen
+  the workflow, while partition-specific selection remains unresolved. Robust model selection,
   additional implementations and larger real datasets remain open.
 - Improve API coherence, error reporting, extension contracts and release
   documentation through actual workflows; avoid adding methods whose

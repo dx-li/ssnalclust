@@ -4,6 +4,8 @@
 
 - Compute held-out MSE with scaled residuals, rejecting invalid scores before
   selection or refitting, and clarify nonunique-imputation semantics.
+  Add a frozen training-only Wine holdout study with saved edge duals,
+  independent certificate audits, and a retained singleton-selection outcome.
 
 - Release obsolete warm-start buffers and prior yielded results in streamed
   paths before computing the next point, preserving mutation-safe snapshots.
