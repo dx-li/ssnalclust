@@ -106,6 +106,70 @@ def test_stream_is_lazy_and_result_mutation_cannot_change_next_start():
     assert len(list(stream)) == 1
 
 
+@pytest.mark.parametrize("public_wrapper", [False, True])
+def test_stream_releases_initial_warm_views_and_their_backing_buffers(public_wrapper):
+    x = np.array([[0.0], [2.0]])
+    primal_buffer = np.zeros(100_000)
+    dual_buffer = np.zeros(100_000)
+    x0 = primal_buffer[:2].reshape(2, 1)
+    dual0 = dual_buffer[:1].reshape(1, 1)
+    x0[:, 0] = [0.3, 1.7]
+    dual0[0, 0] = -0.1
+    references = [weakref.ref(array) for array in (x0, dual0, primal_buffer, dual_buffer)]
+    caller_options = dict(x0=x0, dual0=dual0, store_history=False)
+    if public_wrapper:
+        stream = iter_convex_clustering_path(x, [0.1, 0.2], **caller_options)
+    else:
+        stream = ConvexClusteringProblem(x).iter_path([0.1, 0.2], **caller_options)
+    first = next(stream)
+    assert first.converged
+    # Updating the stream's private warm start must not rewrite caller kwargs.
+    assert caller_options["x0"] is x0
+    assert caller_options["dual0"] is dual0
+    assert_allclose(x0[:, 0], [0.3, 1.7])
+    assert_allclose(dual0, [[-0.1]])
+    # Caller-owned inputs and yielded arrays cannot alter the saved next start.
+    x0[:] = dual0[:] = np.nan
+    first.centers[:] = first.dual[:] = np.nan
+    del caller_options, x0, dual0, primal_buffer, dual_buffer, first
+    # The generator is suspended, not exhausted: obsolete input storage should
+    # already be collectible once the first warm-start snapshot replaces it.
+    assert all(reference() is None for reference in references)
+    second = next(stream)
+    assert second.converged and second.history == []
+    assert_allclose(second.centers, [[0.2], [1.8]], atol=1e-5)
+    stream.close()
+
+
+@pytest.mark.parametrize("public_wrapper", [False, True])
+def test_stream_releases_previous_result_before_next_solve(monkeypatch, public_wrapper):
+    previous_refs = []
+    solve_calls = []
+    original_solve = ConvexClusteringProblem.solve
+
+    def checked_solve(self, *args, **kwargs):
+        # Check before the solver allocates the next point, not merely after
+        # its return overwrites the generator's result variable.
+        assert all(reference() is None for reference in previous_refs)
+        solve_calls.append(1)
+        return original_solve(self, *args, **kwargs)
+
+    monkeypatch.setattr(ConvexClusteringProblem, "solve", checked_solve)
+    x = [[0.0], [2.0]]
+    if public_wrapper:
+        stream = iter_convex_clustering_path(x, [0.1, 0.2], store_history=False)
+    else:
+        stream = ConvexClusteringProblem(x).iter_path([0.1, 0.2], store_history=False)
+    first = next(stream)
+    previous_refs.extend(weakref.ref(value) for value in (first, first.centers, first.dual))
+    del first
+    second = next(stream)
+    assert len(solve_calls) == 2
+    assert second.converged
+    assert_allclose(second.centers, [[0.2], [1.8]], atol=1e-5)
+    stream.close()
+
+
 @pytest.mark.parametrize("solver", ["ssnal", "admm", "ama", "fama"])
 def test_no_history_does_not_change_final_diagnostics(solver):
     x = [[0.0, 1.0], [2.0, 4.0]]

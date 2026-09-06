@@ -36,7 +36,10 @@ ledger, not a declaration of completion.
   paths and partial-fusion cases with graph/solution diagnostics. Broader
   graph families, repeated measurements and real-data scales remain open.
 - Reuse validated graphs and sparse factorizations across path points, and
-  stream results for long paths. Further SSNAL work should follow measured
+  stream results for long paths. The [streaming memory study](streaming_memory.md)
+  now measures 8–256-point paths with exact numerical parity, and fixes
+  obsolete warm-start/result retention. It covers one modest graph; repeats
+  and larger or different graphs remain open. Further SSNAL work should follow measured
   Newton/CG costs; adaptive sieving needs full-problem verification and must
   allow previously removed edges to reactivate.
 

@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "pairs": [
+    {
+      "length": 8,
+      "compared_points": 8,
+      "mismatches": []
+    },
+    {
+      "length": 64,
+      "compared_points": 64,
+      "mismatches": []
+    },
+    {
+      "length": 256,
+      "compared_points": 256,
+      "mismatches": []
+    }
+  ],
+  "errors": [],
+  "scope": "Exact full-path numerical parity and consumer returned-array accounting"
+}

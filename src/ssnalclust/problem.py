@@ -126,14 +126,20 @@ class ConvexClusteringProblem:
     def iter_path(self, gammas, **solver_options):
         """Yield warm-started solutions in order, reusing graph and factors.
 
-        Only the previous primal and dual solution is retained internally.
+        While suspended it retains the yielded result and private primal/dual
+        snapshots. On resumption it releases its reference to that result
+        before computing the next point from the snapshots. Retention does
+        not grow with path length.
         Each yielded array is independent: mutating a yielded result does not
         alter the next warm start. Use store_history=False and consume each
         result immediately to bound memory independently of path length.
         A generator of gammas is consumed lazily; invalid later strengths
         raise when reached. Arbitrary increasing/decreasing orders are valid.
         """
-        options = dict(solver_options)
+        # **kwargs already gives this call its own dictionary. Copying it
+        # would leave the initial warm arrays in solver_options for the
+        # generator's entire lifetime, even after options replaces them.
+        options = solver_options
         try:
             strengths = iter(gammas)
         except TypeError as exc:
@@ -150,6 +156,9 @@ class ConvexClusteringProblem:
             # Snapshot before yielding: a caller may mutate/reuse result arrays.
             options.update(x0=result.centers.copy(), dual0=result.dual.copy())
             yield result
+            # The next solve needs only our snapshots. Do not retain the
+            # previous result/history while allocating its successor.
+            del result
 
     def path(self, gammas, **solver_options):
         """Return a list of warm-started results, retaining the entire path."""

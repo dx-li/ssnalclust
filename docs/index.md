@@ -65,6 +65,8 @@ Other implementations <external_reference_candidates>
 Scalability <scalability>
 Newton performance <newton_performance>
 High-dimensional paths <high_dimensional>
+Streaming path memory <streaming_memory>
+Streaming memory protocol <streaming_protocol>
 Baseline validation <validation>
 Reliability validation <validation_followup>
 Missing-data validation <validation_missing_and_recovery>
