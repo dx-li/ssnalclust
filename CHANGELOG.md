@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Compare with an executed, pinned R/C cvxclustr reference using independent
+  certificates; preserve raw outputs, inaccurate stopping cases, and CI
+  regressions without adding R as a runtime dependency.
+
 - Certify missing-data objective gaps using an equivalent observed-range box,
   while retaining original KKT checks and avoiding artificial ridge penalties.
 - Validate label tolerances before fitting alternative model estimators.

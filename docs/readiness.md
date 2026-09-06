@@ -43,7 +43,10 @@ ledger, not a declaration of completion.
   nontrivial geometries. Avoid selecting gamma with ground-truth labels and
   reporting that as unsupervised model selection.
 - Establish a reproducible paper-style benchmark/data protocol and a broader
-  external reference comparison, not only small random CVXPY problems.
+  external reference comparison, not only small random CVXPY problems. The
+  [executed cvxclustr study](external_reference.md) now covers shared synthetic
+  and Iris problems, including an independently detected reference stopping
+  defect. Additional implementations and larger real datasets remain open.
 - Improve API coherence, error reporting, extension contracts and release
   documentation through actual workflows; avoid adding methods whose
   statistical meaning has not been defined.
