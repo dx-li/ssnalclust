@@ -57,8 +57,12 @@ ledger, not a declaration of completion.
 
 - Keep minimum/current dependency environments and supported Python versions
   in CI, execute examples, and build distributions.
-- Establish versioned documentation, a deliberate release process, changelog,
-  contribution guidelines and issue templates before a public package launch.
+- Build searchable documentation and validate installed wheel/source artifacts
+  in fresh runtime environments. The [local documentation build](installation.md),
+  [distribution harness](distribution_validation.md), [release checklist](releasing.md),
+  changelog and issue templates now provide this foundation. Published versioned
+  documentation, a release candidate, and an independently reviewed public
+  release remain open.
 - A PyPI release, third-party usage, API feedback and sustained maintenance
   are separate evidence from a local test suite. Do not label the project the
   community standard merely because an implementation milestone is finished.

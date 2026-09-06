@@ -13,7 +13,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev,examples]'
       - run: python -m pytest -q
-      - run: ruff check src tests examples
+      - run: ruff check src tests examples scripts docs/conf.py
       - run: python examples/basic_usage.py
       - run: python examples/missing_usage.py
       - run: python examples/structured_usage.py
@@ -31,3 +31,48 @@ jobs:
           python-version: '3.10'
       - run: python -m pip install '.[test,examples]' matplotlib==3.8.0 pandas==1.5.3 numpy==1.24.0 scipy==1.12.0 scikit-learn==1.6.0 cvxpy==1.5.0
       - run: python -m pytest -q
+  documentation-and-distributions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install '.[docs]' build
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Build source-archive documentation with warnings as errors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import sys
+          import tarfile
+
+          archives = list(Path("dist").glob("ssnalclust-*.tar.gz"))
+          assert len(archives) == 1, archives
+          destination = Path("build/documentation-source")
+          with tarfile.open(archives[0]) as archive:
+              archive.extractall(destination, filter="data")
+          sources = list(destination.glob("ssnalclust-*/docs"))
+          assert len(sources) == 1, sources
+          subprocess.run([
+              sys.executable, "-m", "sphinx", "-E", "-b", "html", "-W", "--keep-going",
+              str(sources[0]), "build/docs/html",
+          ], check=True)
+          PY
+      - name: Verify isolated wheel and source installations
+        run: >-
+          python scripts/check_distribution.py dist/ssnalclust-*.whl
+          --sdist dist/ssnalclust-*.tar.gz
+          --report build/artifacts/distribution-validation.json
+      - name: Retain documentation and package validation evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: documentation-and-distributions
+          path: |
+            build/docs/html/
+            build/artifacts/distribution-validation.json
+            dist/
+          if-no-files-found: error
+          retention-days: 14

@@ -20,7 +20,7 @@ class SolverResult:
     """Solution and independently evaluated optimality diagnostics.
 
     ``gap`` is the absolute primal-dual gap; ``relative_gap`` divides by
-    1 + |primal| + |dual|. ``kkt_residual`` is the maximum normalized
+    ``1 + abs(primal) + abs(dual)``. ``kkt_residual`` is the maximum normalized
     stationarity and proximal residual. Success requires both relative gap
     and KKT residual <= requested tolerance. ``history`` records each outer
     iteration (the initial point has iteration zero).

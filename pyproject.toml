@@ -20,6 +20,7 @@ Issues = "https://github.com/dx-li/ssnalclust/issues"
 test = ["pytest>=8", "cvxpy>=1.5", "pandas>=1.5.3"]
 dev = ["pytest>=8", "cvxpy>=1.5", "pandas>=1.5.3", "ruff", "build"]
 examples = ["matplotlib>=3.8"]
+docs = ["sphinx>=7.4,<10", "myst-parser>=3,<6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
