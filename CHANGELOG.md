@@ -4,6 +4,8 @@
 
 - Release obsolete warm-start buffers and prior yielded results in streamed
   paths before computing the next point, preserving mutation-safe snapshots.
+  Measure native memory for streamed versus retained 8–256-point paths, with
+  exact numerical parity checks and portable checkpoint audits.
 
 - Add a frozen Optical Digits protocol, offline data with attribution, atomic
   checkpoints, retained full-data fits and cross-checks, and figures showing

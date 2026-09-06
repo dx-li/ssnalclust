@@ -88,7 +88,9 @@ faster in the recorded unfused fits, but the 1,000-observation midpoint
 runtimes are similar. Data geometry, fusion regime, graph structure and
 achieved accuracy matter; these single-host observations do not establish
 a universal speed or memory advantage. Broader real-data graphs, repeated
-runs, additional implementations and streaming-path memory remain open.
+runs and additional implementations remain open. A subsequent
+[streaming study](streaming_memory.md) measures path-length retention on a
+fixed 32-feature graph; broader streaming-memory scales remain open.
 
 ## Prevent a trivial high-dimensional comparison
 
