@@ -153,7 +153,10 @@ Arbitrary weighted convex clustering paths need not form a hierarchy: clusters
 can split along a path. `summarize_path` reports numerical merges and splits
 between consecutive partitions and does not impose irreversible fusion or
 construct an assumed dendrogram. In particular, a monotone-looking example is
-not a guarantee for other data or weights.
+not a guarantee for other data or weights. For long paths,
+`iter_path_summaries(problem.iter_path(gammas))` yields the same summaries
+without accumulating every label array. See [the streaming example](streaming_memory.md#inspecting-a-path-without-accumulating-summaries)
+for consumption and generator ownership.
 
 ![Four panels show observations, fitted centroid trajectories, recovery of three synthetic groups, and cluster count across gamma.](images/clustering_paths.png)
 
