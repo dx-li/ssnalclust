@@ -51,7 +51,10 @@ ledger, not a declaration of completion.
   external reference comparison, not only small random CVXPY problems. The
   [executed cvxclustr study](external_reference.md) now covers shared synthetic
   and Iris problems, including an independently detected reference stopping
-  defect. Additional implementations and larger real datasets remain open.
+  defect. The [Optical Digits study](digits_study.md) adds 1,797 images and a
+  frozen label-free protocol: numerical cross-checks pass, but one graph
+  produces an almost singleton silhouette selection. Robust model selection,
+  additional implementations and larger real datasets remain open.
 - Improve API coherence, error reporting, extension contracts and release
   documentation through actual workflows; avoid adding methods whose
   statistical meaning has not been defined.

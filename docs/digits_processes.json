@@ -1,0 +1,64 @@
+[
+  {
+    "neighbors": 10,
+    "process_status": "completed",
+    "returncode": 0,
+    "process_wall_seconds": 119.19270229106769,
+    "timeout_seconds": 900,
+    "requested_thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "BLIS_NUM_THREADS": "1"
+    },
+    "command": [
+      "python",
+      "examples/digits_study.py",
+      "--neighbors",
+      "10",
+      "--output",
+      "docs/digits_k10.json",
+      "--arrays",
+      "docs/digits_k10.npz"
+    ],
+    "protocol_commit": "9f522e9",
+    "implementation_commit": "29853ed",
+    "json_exists": true,
+    "json_sha256": "74927631b6bd7e7253dae67da9695a4f7b14fb7ce8559ddd2645a4bf4e22b6f1",
+    "npz_exists": true,
+    "npz_sha256": "f76a95851e487a6baae5231be16d69940dd0948b5c727a612b7d29677cf24e76"
+  },
+  {
+    "neighbors": 20,
+    "process_status": "completed",
+    "returncode": 0,
+    "process_wall_seconds": 147.19190154178068,
+    "timeout_seconds": 900,
+    "requested_thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "BLIS_NUM_THREADS": "1"
+    },
+    "command": [
+      "python",
+      "examples/digits_study.py",
+      "--neighbors",
+      "20",
+      "--output",
+      "docs/digits_k20.json",
+      "--arrays",
+      "docs/digits_k20.npz"
+    ],
+    "protocol_commit": "9f522e9",
+    "implementation_commit": "29853ed",
+    "json_exists": true,
+    "json_sha256": "70176370c66bc84c2d588410f2711e1bf33f3363f2babc90e04cf43459fc54fb",
+    "npz_exists": true,
+    "npz_sha256": "48008541bfa69ddef8f5c1fa12cc84e31570b39a1439934f8e20489597b8167f"
+  }
+]
