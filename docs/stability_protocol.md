@@ -87,8 +87,11 @@ After the choice, fit the full-data seven-point path with newly computed
 full-data preprocessing and graph. Report each point's cluster count,
 singleton fraction, certificates, and post-selection adjusted Rand index.
 Truth labels must never reach the selection function. Report a selected
-singleton or all-fused full fit without replacing it. A Gaussian control is
-not a proof that any finite sample has no meaningful substructure.
+singleton or all-fused full fit without replacing it. The support rule conditions selection on nontrivial partitions: this method
+cannot test whether clusters exist. An all-fused Gaussian fit has ARI one
+mechanically against its single generating label. Neither that value nor a
+selected multi-group partition is a population significance test. A Gaussian
+control is not a proof that a finite sample has no meaningful substructure.
 
 ## Execution and evidence
 
