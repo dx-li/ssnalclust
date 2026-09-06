@@ -1,0 +1,11 @@
+/* Keep scientific tables readable without making the body excessively wide. */
+div.body { max-width: 870px; }
+div.body h1, div.body h2, div.body h3 { color: #17394e; }
+div.body table { display: block; max-width: 100%; overflow-x: auto; }
+div.body pre { overflow-x: auto; }
+div.body img { max-width: 100%; height: auto; }
+div.sphinxsidebar { overflow-wrap: anywhere; }
+@media screen and (min-width: 876px) {
+  div.sphinxsidebar { max-height: calc(100vh - 60px); overflow-y: auto; }
+}
+@media screen and (max-width: 875px) { div.body { max-width: none; } }

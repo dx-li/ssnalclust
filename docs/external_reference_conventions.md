@@ -13,10 +13,10 @@ without incorporating reference implementation code.
 
 For samples in columns, the intended problem is
 
-\[
+$$
  F_\gamma(U)=\tfrac12\sum_{i=1}^n\|U_{:,i}-X_{:,i}\|_2^2
        +\gamma\sum_{i<j}w_{ij}\|U_{:,i}-U_{:,j}\|_q.
-\]
+$$
 
 There is no normalization by sample count, feature count, or edge count, and
 each undirected edge appears once. This is equation (1.1) of Chi and Lange,
@@ -44,9 +44,9 @@ sample-weight argument. It does not automatically center or standardize X.
 The full weight vector enumerates `(1,2), (1,3), …, (1,n), (2,3), …, (n−1,n)`.
 The one-based position is
 
-\[
+$$
  k=n(i-1)-i(i-1)/2+j-i,\qquad 1\le i<j\le n.
-\]
+$$
 
 For n=4 this is `(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)`. This follows from
 `tri2vec`, `vec2tri`, and `compactify_edges` in
@@ -77,25 +77,25 @@ The library's convention `⟨Z,BU−V⟩` therefore requires **Z=−L**.
 
 For a dual-feasible L, C `loss_dual` computes
 
-\[
+$$
  D(L)=-\tfrac12\|B^T L\|_F^2-\langle BX,L\rangle.
-\]
+$$
 
 Equivalently, for the mapped Z,
 
-\[
+$$
  D(Z)=\langle BX,Z\rangle-\tfrac12\|B^T Z\|_F^2,
  \qquad \|Z_e\|_{q^*}\le\gamma w_e.
-\]
+$$
 
 Recompute the weighted primal at the **returned** centers and the dual at
 the **returned** mapped multipliers; do not reconstruct centers from the
 final multiplier and silently compare a different iterate. A stable gap is
 
-\[
+$$
  G=\tfrac12\|U-X+B^TZ\|_F^2+
    \sum_e\bigl(\gamma w_e\|(BU)_e\|_q-\langle Z_e,(BU)_e\rangle\bigr).
-\]
+$$
 
 Check ball feasibility separately. C `loss_dual` omits the indicator of the
 dual domain because its updates project onto that domain. Finite arithmetic

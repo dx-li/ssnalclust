@@ -25,7 +25,7 @@ class StructuredResult:
     n_samples), and ``feature`` has shape (n_features, n_samples). Only the
     penalties belonging to the requested model appear. ``dual_objective`` is
     a feasible dual lower bound, ``gap`` is the absolute primal-dual gap,
-    and ``relative_gap`` divides it by 1 + |objective| + |dual_objective|.
+    and ``relative_gap`` divides it by ``1 + abs(objective) + abs(dual_objective)``.
     Convergence requires both ``relative_gap <= tol`` and
     ``kkt_residual <= tol``. The gap is evaluated by a nonnegative residual
     decomposition to avoid subtracting nearly equal objective values.

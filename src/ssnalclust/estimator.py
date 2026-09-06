@@ -83,11 +83,11 @@ class ConvexClustering(ClusterMixin, BaseEstimator):
 
     Attributes
     ----------
-    centers_ : ndarray of shape (n_samples, n_features)
+    centers_ : ``ndarray of shape (n_samples, n_features)``
         Optimized centroid for every observation.
-    labels_ : ndarray of shape (n_samples,)
+    labels_ : ``ndarray of shape (n_samples,)``
         Consecutive integer cluster labels.
-    cluster_centers_ : ndarray of shape (n_clusters_, n_features)
+    cluster_centers_ : ``ndarray of shape (n_clusters, n_features)``
         Mean of fitted centroids in each thresholded cluster.
     n_clusters_ : int
         Number of thresholded clusters.
@@ -104,12 +104,13 @@ class ConvexClustering(ClusterMixin, BaseEstimator):
         and minimum fidelity mass, using strong convexity.
     converged_ : bool
         Whether the solver satisfied its convergence criteria.
-    weights_ : scipy.sparse matrix or ndarray
+    weights_ : ``scipy.sparse matrix or ndarray``
         Weight adjacency passed to the solver.
     n_features_in_ : int
         Number of features seen in fit.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ``ndarray of shape (n_features,)``
         Input feature names, when all input names are strings.
+
 
     Notes
     -----

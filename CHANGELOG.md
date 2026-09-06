@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a strict Sphinx/MyST documentation build with generated public API
+  reference, isolated wheel/source installation checks, release guidance,
+  and scientific issue templates.
+
 - Reduce temporary-array work in SSNAL Newton products and normalize edge
   vectors before evaluating their projection Jacobians, avoiding finite-input
   norm overflow and underflow.

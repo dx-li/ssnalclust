@@ -32,6 +32,9 @@ grid, including failures to recover clusters despite certified optimization.
 The [external implementation study](docs/external_reference.md) compares
 solutions with a pinned R/C reference and retains inaccurate reference stops.
 The [readiness ledger](docs/readiness.md) tracks the broader work still needed.
+Build the searchable documentation locally with `python -m pip install '.[docs]'`
+and `python -m sphinx -b html -W --keep-going docs build/docs/html`; see the
+[documentation guide](docs/installation.md).
 
 ## Quick start
 

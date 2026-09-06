@@ -1,3 +1,6 @@
 include CITATION.cff CHANGELOG.md CONTRIBUTING.md
-recursive-include docs *.md *.jsonl *.png
+recursive-include docs *.md *.jsonl *.png *.rst *.py *.css
 recursive-include examples *.py *.R
+recursive-include .github *.yml *.md
+recursive-include scripts *.py
+recursive-include tests *.py

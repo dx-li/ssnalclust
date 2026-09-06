@@ -15,10 +15,10 @@ scientific boundaries. The [algorithm audit](algorithm_audit.md) derives the cor
 
 Arrays use `(n_samples, n_features)`. The complete-data objective is
 
-\[
+$$
 \min_U \frac12\sum_i m_i\|U_i-X_i\|_2^2
        +\gamma\sum_{i<j}w_{ij}\|U_i-U_j\|_q.
-\]
+$$
 
 The default fidelity masses are `m_i = 1`. A graph edge has nonnegative
 weight `w_ij`; a zero weight omits the edge. `gamma` balances fidelity and
