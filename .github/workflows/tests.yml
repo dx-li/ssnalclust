@@ -34,6 +34,11 @@ jobs:
         run: |
           python examples/streaming_memory.py --smoke --output build/artifacts/streaming-smoke.jsonl
           python examples/plot_streaming_memory.py build/artifacts/streaming-smoke.jsonl --output build/artifacts/streaming-smoke.png --audit build/artifacts/streaming-smoke-audit.json
+      - name: Run corrected stability smoke study and independent artifact audit
+        run: |
+          python examples/stability_study.py --smoke --output-dir build/artifacts/stability
+          python examples/audit_stability.py build/artifacts/stability --output build/artifacts/stability/audit.json
+          python examples/plot_stability.py build/artifacts/stability --output build/artifacts/stability.png
       - name: Run offline Wine holdout smoke study and independent artifact audit
         run: |
           python examples/wine_holdout_study.py --smoke --output-dir build/artifacts/wine-holdout
@@ -173,6 +178,11 @@ jobs:
         run: |
           python examples/streaming_memory.py --smoke --output build/artifacts/streaming-smoke.jsonl
           python examples/plot_streaming_memory.py build/artifacts/streaming-smoke.jsonl --output build/artifacts/streaming-smoke.png --audit build/artifacts/streaming-smoke-audit.json
+      - name: Run corrected stability smoke study and independent artifact audit
+        run: |
+          python examples/stability_study.py --smoke --output-dir build/artifacts/stability
+          python examples/audit_stability.py build/artifacts/stability --output build/artifacts/stability/audit.json
+          python examples/plot_stability.py build/artifacts/stability --output build/artifacts/stability.png
       - name: Run offline Wine holdout smoke study and independent artifact audit
         run: |
           python examples/wine_holdout_study.py --smoke --output-dir build/artifacts/wine-holdout
