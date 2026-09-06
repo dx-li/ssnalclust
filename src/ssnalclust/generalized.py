@@ -10,19 +10,22 @@ from numbers import Integral, Real
 
 import numpy as np
 from scipy.sparse.csgraph import connected_components
-from scipy.special import expit
+from scipy.special import kl_div, xlogy
 
 from .graph import graph_from_weights
-from .prox import penalty_value, project_dual, prox_norm
+from .prox import project_dual, prox_norm
 
 
 @dataclass
 class GeneralizedResult:
-    """Natural parameters and an evaluated KKT certificate.
+    """Natural parameters with loss-specific primal-dual and KKT certificates.
 
     ``centers`` and ``fitted_means`` coincide for Huber. For logistic and
     Poisson loss, fitted means are sigmoid(centers) and exp(centers).
-    No quadratic-fidelity duality gap is claimed for these models.
+    ``dual`` is feasible for both the edge balls and fidelity conjugate.
+    ``dual_scale`` records global shrinkage of the internal PDHG multiplier
+    to obtain that certificate. A zero scale gives a valid but often weak
+    lower bound. Convergence requires both relative gap and KKT <= tol.
     """
 
     centers: np.ndarray
@@ -33,6 +36,18 @@ class GeneralizedResult:
     converged: bool
     history: list
     dual: np.ndarray
+    dual_objective: float = float("nan")
+    gap: float = float("nan")
+    relative_gap: float = float("nan")
+    dual_scale: float = float("nan")
+
+
+def _sigmoid_pair(u):
+    """Success and failure probabilities, preserving representable tails."""
+    exponential = np.exp(-np.abs(u))
+    small = exponential / (1 + exponential)
+    large = 1 / (1 + exponential)
+    return np.where(u >= 0, large, small), np.where(u >= 0, small, large)
 
 
 def _fidelity(u, x, loss, delta):
@@ -48,15 +63,133 @@ def _fidelity(u, x, loss, delta):
         value = np.sum(
             np.logaddexp(0.0, -np.abs(u)) + (1 - x) * np.maximum(u, 0.0) + x * np.maximum(-u, 0.0)
         )
-        means = expit(u)
+        means, failures = _sigmoid_pair(u)
         # Keep the small failure probability when sigmoid(u) rounds to one.
-        gradient = np.where(u >= 0, (1 - x) - expit(-u), means - x)
+        gradient = np.where(u >= 0, (1 - x) - failures, means - x)
     else:
         with np.errstate(over="ignore", invalid="ignore"):
             means = np.exp(u)
             value = np.sum(means - x * u)
         gradient = means - x
     return float(value), gradient, means
+
+
+def _certificate_dual(x, b, dual, radii, loss, delta, penalty):
+    """Repair the fidelity-conjugate domain by globally shrinking edge duals."""
+    edge_feasible = project_dual(dual, radii, penalty)
+    divergence = b.T @ edge_feasible
+    scale = 1.0
+    if loss == "huber":
+        maximum = np.max(np.abs(divergence), initial=0.0)
+        if maximum > delta:
+            scale = delta / maximum
+    else:
+        positive = divergence > 0
+        if np.any(positive):
+            with np.errstate(over="ignore"):
+                scale = min(scale, float(np.min(x[positive] / divergence[positive])))
+        if loss == "logistic":
+            negative = divergence < 0
+            if np.any(negative):
+                with np.errstate(over="ignore"):
+                    scale = min(scale, float(np.min((1 - x[negative]) / -divergence[negative])))
+    if scale < 1:
+        scale = float(np.nextafter(scale, 0.0))
+
+    def in_domain(a):
+        if loss == "huber":
+            return np.all(np.abs(a) <= delta)
+        if loss == "logistic":
+            # Comparing divergence directly catches violations that would
+            # disappear if computing x-a rounded back onto 0 or 1.
+            return np.all((a <= x) & (a >= x - 1))
+        return np.all(a <= x)
+
+    # Recompute from the actual arrays to check rounding of graph reductions.
+    # Boundary wrong signs may survive every positive rescaling: zero is a
+    # valid fallback, not a reason to pretend an infeasible bound is finite.
+    for _ in range(5):
+        candidate = scale * edge_feasible
+        divergence = b.T @ candidate
+        if in_domain(divergence):
+            return candidate, divergence, scale
+        scale = float(np.nextafter(0.99 * scale, 0.0))
+    return np.zeros_like(edge_feasible), np.zeros_like(x), 0.0
+
+
+def _log_mean_kl(q, mean, log_mean):
+    """KL(q,exp(log_mean)), retaining finite values after exp underflow."""
+    # A caller's sigmoid may underflow before exp(log_mean) does. Recover
+    # any still-representable mean before using the true-underflow formula.
+    mean = np.array(mean, copy=True)
+    zero_mean = mean == 0
+    mean[zero_mean] = np.exp(log_mean[zero_mean])
+    values = kl_div(q, mean)
+    # Some special-function implementations evaluate KL as three large
+    # cancelling terms near q=mean. Use its convergent local series instead:
+    # KL = mean * sum_{k>=2} (-1)^k t^k/[k(k-1)], t=(q-mean)/mean.
+    close = (mean > 0) & (np.abs(q - mean) <= 0.001 * mean)
+    t = (q[close] - mean[close]) / mean[close]
+    polynomial = np.full_like(t, 1 / 56)
+    for coefficient in (-1 / 42, 1 / 30, -1 / 20, 1 / 12, -1 / 6, 0.5):
+        polynomial = coefficient + t * polynomial
+    values[close] = mean[close] * t**2 * polynomial
+    underflow = (mean == 0) & (q > 0)
+    if np.any(underflow):
+        values[underflow] = q[underflow] * (np.log(q[underflow]) - log_mean[underflow] - 1)
+    return values
+
+
+def _generalized_diagnostics(x, u, dual, b, radii, loss, delta, penalty):
+    value, gradient, means = _fidelity(u, x, loss, delta)
+    feasible, divergence, scale = _certificate_dual(x, b, dual, radii, loss, delta, penalty)
+    differences = b @ u
+    order = {"l1": 1, "l2": 2, "linf": np.inf}[penalty]
+    group_penalties = radii * np.linalg.norm(differences, ord=order, axis=1)
+    pairings = np.einsum("ij,ij->i", feasible, differences)
+    slacks = group_penalties - pairings
+    roundoff = 64 * np.finfo(float).eps * (group_penalties + np.abs(pairings))
+    if np.any(slacks < -roundoff):
+        raise FloatingPointError("Negative edge Fenchel gap exceeds floating-point roundoff")
+    if loss == "huber":
+        residual = u - x
+        clipped = np.clip(residual, -delta, delta)
+        data_gaps = 0.5 * (clipped + divergence) ** 2 + np.maximum(
+            np.abs(residual) - delta, 0.0
+        ) * (delta + np.sign(residual) * divergence)
+        # Apply the graph adjoint identity before multiplying large offsets.
+        dual_objective = np.einsum("ij,ij->", b @ x, feasible) - 0.5 * np.sum(divergence**2)
+    elif loss == "logistic":
+        q = x - divergence
+        dual_objective = -np.sum(xlogy(q, q) + xlogy(1 - q, 1 - q))
+        _, failures = _sigmoid_pair(u)
+        data_gaps = _log_mean_kl(q, means, -np.logaddexp(0.0, -u)) + _log_mean_kl(
+            1 - q, failures, -np.logaddexp(0.0, u)
+        )
+    else:
+        q = x - divergence
+        dual_objective = np.sum(q - xlogy(q, q))
+        data_gaps = _log_mean_kl(q, means, u)
+    gap = float(np.sum(data_gaps) + np.sum(np.maximum(slacks, 0.0)))
+    objective = float(value + np.sum(group_penalties))
+    stationarity = np.linalg.norm(gradient + divergence) / (
+        1 + np.linalg.norm(gradient) + np.linalg.norm(divergence)
+    )
+    edge_residual = differences - prox_norm(differences + feasible, radii, penalty)
+    edge_error = np.linalg.norm(edge_residual) / (
+        1 + np.linalg.norm(differences) + np.linalg.norm(feasible)
+    )
+    status = dict(
+        objective=objective,
+        dual_objective=float(dual_objective),
+        gap=gap,
+        relative_gap=float(gap / (1 + abs(objective) + abs(dual_objective))),
+        kkt_residual=float(max(stationarity, edge_error)),
+        dual_scale=scale,
+    )
+    if not all(np.isfinite(number) for number in status.values()) or gap < 0:
+        raise FloatingPointError("Objective or certificate overflowed; rescale X")
+    return status, feasible, means
 
 
 def _prox_fidelity(y, x, step, loss, delta):
@@ -94,9 +227,9 @@ def _prox_fidelity(y, x, step, loss, delta):
     current = np.minimum(np.maximum(y, low), high)
     for _ in range(100):
         if loss == "logistic":
-            means = expit(current)
-            gradient = np.where(current >= 0, (1 - x) - expit(-current), means - x)
-            derivative = 1 + step * means * expit(-current)
+            means, failures = _sigmoid_pair(current)
+            gradient = np.where(current >= 0, (1 - x) - failures, means - x)
+            derivative = 1 + step * means * failures
         else:
             with np.errstate(over="ignore"):
                 means = np.exp(current)
@@ -192,7 +325,7 @@ def solve_generalized(
     penalty : {'l1', 'l2', 'linf'}, default='l2'
         Norm of each edge's natural-parameter difference.
     tol : float, default=1e-6
-        Required maximum normalized stationarity and edge KKT residual.
+        Required relative primal-dual gap and normalized KKT residual.
     max_iter : int, default=10000
         Maximum PDHG iterations; exhaustion returns converged=False.
 
@@ -208,7 +341,11 @@ def solve_generalized(
 
     PDHG uses equal primal and dual steps satisfying
     step**2 * ||B||**2 < 1, with a graph-degree upper bound. Every returned
-    history record evaluates the actual objective and KKT equations.
+    history record evaluates the actual objective, gap and KKT equations.
+    Edge multipliers are globally scaled to satisfy the fidelity-conjugate
+    domain before certification. Boundary observations can force that scale
+    to zero and give a weak bound even when the raw iterate's KKT is small;
+    this is reported as nonconvergence when the requested gap is unmet.
     """
     if np.iscomplexobj(X):
         raise ValueError("X must be real")
@@ -252,25 +389,23 @@ def solve_generalized(
     step = 0.99 / np.sqrt(max(1.0, 2 * degree.max()))
     history = []
     for iteration in range(max_iter + 1):
-        value, gradient, means = _fidelity(u, x, loss, huber_delta)
-        bt = b.T @ dual
-        differences = b @ u
-        stationarity = np.linalg.norm(gradient + bt) / (
-            1 + np.linalg.norm(gradient) + np.linalg.norm(bt)
+        status, feasible, means = _generalized_diagnostics(
+            x, u, dual, b, radii, loss, huber_delta, penalty
         )
-        edge_residual = differences - prox_norm(differences + dual, radii, penalty)
-        edge_error = np.linalg.norm(edge_residual) / (
-            1 + np.linalg.norm(differences) + np.linalg.norm(dual)
-        )
-        kkt = float(max(stationarity, edge_error))
-        objective = value + penalty_value(differences, radii, penalty)
-        if not np.isfinite(objective) or not np.isfinite(kkt):
-            raise FloatingPointError("Objective or residual overflowed; rescale X")
-        history.append(dict(iteration=iteration, objective=objective, kkt_residual=kkt))
-        if kkt <= tol or iteration == max_iter:
+        history.append(dict(iteration=iteration, **status))
+        converged = max(status["relative_gap"], status["kkt_residual"]) <= tol
+        if converged or iteration == max_iter:
             break
         dual = project_dual(dual + step * (b @ extrapolated), radii, penalty)
         next_u = _prox_fidelity(u - step * (b.T @ dual), x, step, loss, huber_delta)
         extrapolated = 2 * next_u - u
         u = next_u
-    return GeneralizedResult(u, means, objective, kkt, iteration, kkt <= tol, history, dual)
+    return GeneralizedResult(
+        centers=u,
+        fitted_means=means,
+        **status,
+        n_iter=iteration,
+        converged=converged,
+        history=history,
+        dual=feasible,
+    )

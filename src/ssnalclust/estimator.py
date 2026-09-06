@@ -16,6 +16,15 @@ from .solvers import solve
 
 def _centroid_labels(centers, tolerance):
     """Connected components under Euclidean centroid distance <= tolerance."""
+    # Exact duplicates form cliques. Querying the same clique once per sample
+    # becomes quadratic even though the graph itself is never materialized.
+    unique, inverse = np.unique(centers, axis=0, return_inverse=True)
+    if len(unique) < len(centers):
+        expanded = _centroid_labels(unique, tolerance)[inverse]
+        _, first = np.unique(expanded, return_index=True)
+        relabel = np.empty(len(first), dtype=np.intp)
+        relabel[np.argsort(first)] = np.arange(len(first))
+        return relabel[expanded]
     # Traverse the implicit radius graph without materializing its potentially
     # quadratic number of edges (a fully fused solution forms a clique).
     tree = cKDTree(centers)
@@ -90,6 +99,9 @@ class ConvexClustering(ClusterMixin, BaseEstimator):
         Primal objective value.
     dual_gap_ : float
         Primal-dual objective gap.
+    center_error_bound_ : float
+        Numerical Frobenius centroid-error bound from the absolute duality gap
+        and minimum fidelity mass, using strong convexity.
     converged_ : bool
         Whether the solver satisfied its convergence criteria.
     weights_ : scipy.sparse matrix or ndarray
@@ -197,11 +209,12 @@ class ConvexClustering(ClusterMixin, BaseEstimator):
         self.n_iter_ = result.n_iter
         self.objective_ = result.objective
         self.dual_gap_ = result.gap
+        self.center_error_bound_ = result.center_error_bound
         self.converged_ = result.converged
         if not self.converged_:
             warnings.warn(
-                f"{self.solver} did not converge within {self.max_iter} iterations "
-                f"(KKT residual {result.kkt_residual:.3g}).",
+                f"{self.solver}: {result.message} "
+                f"(KKT residual {result.kkt_residual:.3g}, relative gap {result.relative_gap:.3g}).",
                 ConvergenceWarning,
                 stacklevel=2,
             )
@@ -246,9 +259,23 @@ def convex_clustering_path(X, gammas, weights=None, **solver_options):
     ):
         raise ValueError("gammas must contain finite nonnegative numbers")
     options = dict(solver_options)
-    results = []
-    for gamma in values:
-        result = solve(X, weights=weights, gamma=gamma, **options)
-        results.append(result)
-        options.update(x0=result.centers, dual0=result.dual)
-    return results
+    from .problem import ConvexClusteringProblem
+
+    problem = ConvexClusteringProblem(X, weights, options.pop("sample_weight", None))
+    return problem.path(values, **options)
+
+
+def iter_convex_clustering_path(X, gammas, weights=None, **solver_options):
+    """Stream fixed-graph path results with bounded retained solver state.
+
+    Options match convex_clustering_path. Unlike its list-returning sibling,
+    strengths are validated as consumed. Graph construction and an ADMM
+    factorization are shared across path points. Set store_history=False to
+    omit per-iteration histories; consume and release results to avoid storing
+    the full centroid trajectory in memory.
+    """
+    from .problem import ConvexClusteringProblem
+
+    options = dict(solver_options)
+    problem = ConvexClusteringProblem(X, weights, options.pop("sample_weight", None))
+    return problem.iter_path(gammas, **options)

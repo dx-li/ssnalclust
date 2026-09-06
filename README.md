@@ -22,6 +22,13 @@ python -m pytest -q
 Runtime dependencies are NumPy, SciPy, and scikit-learn. CVXPY is used only in
 tests; PyLops is no longer required. A PyPI release has not been published.
 
+## Scientific guide
+
+Start with the [user guide](docs/user_guide.md) and [API reference](docs/api.md).
+The guide includes an [executed clustering-path gallery](docs/images/clustering_paths.png)
+and explains graph scaling, solution accuracy, and model-selection limitations.
+The [readiness ledger](docs/readiness.md) tracks the broader work still needed.
+
 ## Quick start
 
 ```python
@@ -83,7 +90,12 @@ assert result.converged, result.message
 path = convex_clustering_path(X, [0, 0.1, 0.5, 1], weights=W)
 ```
 
-Paths reuse primal and dual iterates and keep the graph fixed. Every path
+Paths reuse primal and dual iterates, the validated graph, and ADMM's sparse
+factorization. `ConvexClusteringProblem` prepares one fixed problem for repeated
+solves. `iter_convex_clustering_path` or `problem.iter_path` streams solutions;
+use `store_history=False` to avoid retaining iteration histories. See
+[repeated_solves.py](examples/repeated_solves.py). The optional `check_every`
+parameter reduces diagnostic frequency; the final result is always checked. Every path
 point has its own convergence diagnostics. `summarize_path(path)` reports
 cluster counts, certificates, and numerical merge/split transitions. Arbitrary weighted convex
 clustering paths can split; this package does not force a dendrogram or
@@ -93,7 +105,10 @@ irreversibly compress fused clusters.
 
 `SolverResult` reports the feasible primal objective, feasible dual objective,
 absolute and relative duality gaps, normalized KKT residual, convergence flag,
-iteration count, and diagnostic history. Success requires **both** the relative
+iteration count, and diagnostic history. The absolute gap is evaluated through
+Fenchel residuals to avoid subtracting nearly equal objectives.
+`center_error_bound` translates it into a numerical Frobenius centroid-error
+bound using strong convexity; relative gap alone is not an absolute error bound. Success requires **both** the relative
 gap and KKT residual to meet `tol`. Exhausting `max_iter` returns an unconverged
 result; the estimator also emits `ConvergenceWarning`. Inspect these results,
 especially for first-order methods at tight tolerances. Certificates describe
@@ -117,9 +132,11 @@ The edge dual need not be unique. `gamma=0` returns the observations exactly
 The package also includes separately formulated solvers for missing entries,
 feature-sparse clustering, biclustering, and robust/generalized fidelities.
 See [model definitions and examples](docs/models.md). These use primal-dual
-hybrid gradient (PDHG) with actual KKT checks. They do **not** reuse the
-complete-data squared-loss duality certificate or assert uniqueness for
-models that lack strict convexity.
+hybrid gradient (PDHG). Structured quadratic models have their own primal-dual
+gaps; Huber/logistic/Poisson use feasible loss-specific conjugate certificates.
+Both gaps and KKT conditions must pass. The missing-data solver currently
+reports KKT residuals only; a valid missing-data gap needs an additional dual
+equality constraint and remains open work.
 
 ## Compatibility with the original file
 
@@ -152,7 +169,10 @@ The benchmark reports achieved accuracy alongside timings. Recorded local
 results are in [benchmark_results.jsonl](docs/benchmark_results.jsonl); they
 are not portable performance guarantees. Sparse ADMM factorizations can fill
 in; high-dimensional nearest-neighbor queries and dense graphs can be costly.
-See [scope and development plan](docs/scope.md) for remaining work.
+The [process-isolated scalability study](docs/scalability.md) now includes
+native peak RSS and sparse cases through 10,000 samples, with source hashes,
+Newton/CG profiling and timeout records. See the
+[readiness ledger](docs/readiness.md) for remaining work.
 
 ## References
 

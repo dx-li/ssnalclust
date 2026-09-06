@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose, assert_array_equal
 from scipy import sparse
 
 from ssnalclust.solvers import solve
-from ssnalclust.structured import solve_biclustering, solve_sparse
+from ssnalclust.structured import _diagnostics, _Term, solve_biclustering, solve_sparse
 
 
 def _oracle(
@@ -40,6 +40,78 @@ def _oracle(
     return U.value, problem.value
 
 
+def _independent_certificate(X, result, row, column=None, feature=None, gr=1.0, gc=1.0, alpha=1.0):
+    """Reconstruct adjoints and the dual objective without package operators."""
+    adjoint = np.zeros_like(X)
+    for name, weights, strength, transpose in [
+        ("row", row, gr, False),
+        ("column", column, gc, True),
+    ]:
+        if weights is None:
+            continue
+        correction = adjoint.T if transpose else adjoint
+        edge = 0
+        for i in range(len(weights)):
+            for j in range(i + 1, len(weights)):
+                if weights[i, j] > 0:
+                    z = result.duals[name][edge]
+                    assert np.linalg.norm(z) <= strength * weights[i, j] + 1e-12
+                    correction[i] += z
+                    correction[j] -= z
+                    edge += 1
+    if feature is not None:
+        assert np.all(np.linalg.norm(result.duals["feature"], axis=1) <= alpha * feature + 1e-12)
+        adjoint += result.duals["feature"].T
+    dual_value = np.sum(X * adjoint) - 0.5 * np.sum(adjoint**2)
+    assert_allclose(result.dual_objective, dual_value, atol=1e-12, rtol=1e-12)
+    assert_allclose(result.gap, result.objective - dual_value, atol=2e-12, rtol=1e-5)
+    assert result.gap >= 0
+    assert_allclose(
+        result.relative_gap, result.gap / (1 + abs(result.objective) + abs(result.dual_objective))
+    )
+    for record in result.history:
+        assert record["gap"] >= 0
+        assert_allclose(
+            record["relative_gap"],
+            record["gap"] / (1 + abs(record["objective"]) + abs(record["dual_objective"])),
+        )
+
+
+def _dual_oracle(X, row, column=None, feature=None, gr=1.0, gc=1.0, alpha=1.0):
+    """Independently optimize the constrained dual, not a primal surrogate."""
+    cp = pytest.importorskip("cvxpy")
+    entries = [[cp.Constant(0.0) for _ in range(X.shape[1])] for _ in range(X.shape[0])]
+    constraints = []
+    for weights, strength, transpose in [(row, gr, False), (column, gc, True)]:
+        if weights is None:
+            continue
+        for i in range(len(weights)):
+            for j in range(i + 1, len(weights)):
+                if weights[i, j] > 0:
+                    z = cp.Variable(X.shape[0] if transpose else X.shape[1])
+                    constraints.append(cp.norm(z, 2) <= strength * weights[i, j])
+                    for k in range(z.size):
+                        if transpose:
+                            entries[k][i] += z[k]
+                            entries[k][j] -= z[k]
+                        else:
+                            entries[i][k] += z[k]
+                            entries[j][k] -= z[k]
+    if feature is not None:
+        for j, weight in enumerate(feature):
+            z = cp.Variable(X.shape[0])
+            constraints.append(cp.norm(z, 2) <= alpha * weight)
+            for i in range(X.shape[0]):
+                entries[i][j] += z[i]
+    adjoint = cp.bmat(entries)
+    problem = cp.Problem(
+        cp.Maximize(cp.sum(cp.multiply(X, adjoint)) - 0.5 * cp.sum_squares(adjoint)), constraints
+    )
+    problem.solve(solver="CLARABEL", tol_gap_abs=1e-10, tol_gap_rel=1e-10, tol_feas=1e-10)
+    assert problem.status == "optimal"
+    return problem.value
+
+
 @pytest.mark.parametrize("strength", [0.05, 0.4, 5.0])
 def test_biclustering_matches_independent_convex_objective(strength):
     X = np.random.default_rng(91).normal(size=(5, 3))
@@ -53,11 +125,13 @@ def test_biclustering_matches_independent_convex_objective(strength):
     expected, objective = _oracle(X, row, column, gamma_row=strength, gamma_col=0.7 * strength)
     assert result.converged
     assert result.kkt_residual <= 1e-8
+    assert result.relative_gap <= 1e-8
     assert_allclose(result.centers, expected, atol=3e-5)
     assert_allclose(result.objective, objective, atol=3e-7)
     assert result.duals["row"].shape == (3, 3)
     assert result.duals["column"].shape == (2, 5)
     assert result.offset is None
+    _independent_certificate(X, result, row, column, gr=strength, gc=0.7 * strength)
 
 
 @pytest.mark.parametrize("alpha", [0.05, 0.5, 5.0])
@@ -72,12 +146,78 @@ def test_sparse_matches_independent_centered_objective(alpha):
         X - X.mean(axis=0), row, feature_weights=feature, gamma_row=0.1, alpha=alpha
     )
     assert result.converged
+    assert result.relative_gap <= 1e-8
     assert_allclose(result.centers, expected, atol=3e-5)
     assert_allclose(result.objective, objective, atol=3e-7)
     assert_allclose(result.offset, X.mean(axis=0))
     assert_allclose(result.feature_norms, np.linalg.norm(result.centers, axis=0))
     assert result.duals["feature"].shape == (3, 5)
     assert_allclose(result.centers.mean(axis=0), 0, atol=1e-14)
+    _independent_certificate(X - X.mean(axis=0), result, row, feature=feature, gr=0.1, alpha=alpha)
+
+
+@pytest.mark.parametrize("model", ["biclustering", "sparse"])
+@pytest.mark.parametrize("strength", [0.1, 3.0])
+def test_certificates_bracket_independently_solved_dual(model, strength):
+    X = np.random.default_rng(803).normal(size=(4, 3))
+    row = np.diag([1.0, 0.2, 2.0], 1) + np.diag([1.0, 0.2, 2.0], -1)
+    if model == "biclustering":
+        column = np.array([[0.0, 0.7, 0.0], [0.7, 0.0, 1.2], [0.0, 1.2, 0.0]])
+        result = solve_biclustering(X, row, column, strength, 0.4, tol=1e-9)
+        dual_optimum = _dual_oracle(X, row, column, gr=strength, gc=0.4)
+    else:
+        feature = np.array([0.0, 0.4, 1.0])
+        result = solve_sparse(X, row, gamma=strength, alpha=0.6, feature_weights=feature, tol=1e-9)
+        dual_optimum = _dual_oracle(
+            X - X.mean(axis=0), row, feature=feature, gr=strength, alpha=0.6
+        )
+    assert result.converged
+    assert result.relative_gap <= 1e-9
+    assert result.dual_objective <= dual_optimum + 2e-8
+    assert dual_optimum <= result.objective + 2e-8
+    assert_allclose(result.dual_objective, dual_optimum, atol=2e-8)
+
+
+@pytest.mark.parametrize("model", ["biclustering", "sparse"])
+def test_small_normalized_kkt_alone_cannot_certify_large_objective_error(model):
+    if model == "biclustering":
+        result = solve_biclustering([[0.0, 1e8]], gamma_row=0.0, gamma_col=1.0)
+    else:
+        result = solve_sparse([[-1e8], [1e8]], gamma=0.0, alpha=1.0)
+    initial = result.history[0]
+    # Historical KKT-only stopping accepted this untouched initial point.
+    assert initial["kkt_residual"] < 1e-6
+    assert initial["relative_gap"] > 0.9
+    assert result.n_iter > 0
+    assert result.converged
+    assert result.relative_gap <= 1e-6
+    assert result.kkt_residual <= 1e-6
+
+
+def test_gap_decomposition_retains_error_lost_in_objective_subtraction():
+    X = np.array([[1e8]])
+    U = np.array([[1e8 - 1 + 1e-4]])
+    term = _Term("feature", np.ones(1), lambda u: u.T, lambda z: z.T, 1.0)
+    status = _diagnostics(X, U, {"feature": np.ones((1, 1))}, [term])
+    exact_residual_gap = 0.5 * float(U[0, 0] - X[0, 0] + 1.0) ** 2
+    assert exact_residual_gap > 0
+    assert status["gap"] == exact_residual_gap
+    assert status["objective"] - status["dual_objective"] == 0.0
+
+
+def test_infeasible_dual_cannot_be_reported_as_a_lower_bound():
+    term = _Term("feature", np.ones(1), lambda u: u.T, lambda z: z.T, 1.0)
+    with pytest.raises(ValueError, match="feasible"):
+        _diagnostics(np.zeros((1, 1)), np.zeros((1, 1)), {"feature": np.array([[2.0]])}, [term])
+
+
+def test_dual_evaluation_ignores_common_biclustering_offset():
+    X = np.array([[0.0, 2.0], [4.0, 1.0], [3.0, -2.0]])
+    direct = solve_biclustering(X, gamma_row=0.3, gamma_col=0.4, tol=1e-9)
+    shifted = solve_biclustering(X + 1e7, gamma_row=0.3, gamma_col=0.4, tol=1e-8)
+    assert direct.converged and shifted.converged
+    assert_allclose(shifted.objective, direct.objective, atol=2e-8)
+    assert_allclose(shifted.dual_objective, direct.dual_objective, atol=2e-8)
 
 
 def test_biclustering_transpose_equivariance():

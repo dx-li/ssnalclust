@@ -1,6 +1,6 @@
 """Convex clustering with sparse solvers and scikit-learn estimators."""
 
-from .estimator import ConvexClustering, convex_clustering_path
+from .estimator import ConvexClustering, convex_clustering_path, iter_convex_clustering_path
 from .generalized import GeneralizedResult, solve_generalized
 from .graph import graph_from_weights, k_neighbors_graph
 from .graph_extra import connected_k_neighbors_graph, minimum_spanning_tree_graph, self_tuning_graph
@@ -13,12 +13,15 @@ from .model_estimators import (
     SparseConvexClustering,
 )
 from .path import summarize_path
+from .problem import ConvexClusteringProblem
 from .selection import SelectionResult, select_gamma
 from .solvers import SolverResult, solve
 from .structured import StructuredResult, solve_biclustering, solve_sparse
 
 __version__ = "0.1.0"
 __all__ = [
+    "ConvexClusteringProblem",
+    "iter_convex_clustering_path",
     "summarize_path",
     "minimum_spanning_tree_graph",
     "connected_k_neighbors_graph",

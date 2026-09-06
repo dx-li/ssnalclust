@@ -1,8 +1,8 @@
 """Convex biclustering and feature-sparse convex clustering via PDHG.
 
 The primal-dual hybrid gradient method uses exact proximal updates and a
-conservative operator norm bound. Its stopping test checks stationarity and
-every penalty's subgradient inclusion on the returned primal and dual arrays.
+conservative operator norm bound. Its stopping test requires both a feasible
+primal-dual gap and KKT conditions on the returned primal and dual arrays.
 """
 
 from collections.abc import Callable
@@ -13,7 +13,7 @@ import numpy as np
 from scipy import sparse
 
 from .graph import graph_from_weights
-from .prox import penalty_value, project_dual
+from .prox import project_dual
 
 
 @dataclass
@@ -23,8 +23,12 @@ class StructuredResult:
     ``duals`` maps penalty names to arrays with groups in rows: ``row`` has
     shape (n_row_edges, n_features), ``column`` has shape (n_column_edges,
     n_samples), and ``feature`` has shape (n_features, n_samples). Only the
-    penalties belonging to the requested model appear. No duality gap is
-    reported; convergence requires ``kkt_residual <= tol``.
+    penalties belonging to the requested model appear. ``dual_objective`` is
+    a feasible dual lower bound, ``gap`` is the absolute primal-dual gap,
+    and ``relative_gap`` divides it by 1 + |objective| + |dual_objective|.
+    Convergence requires both ``relative_gap <= tol`` and
+    ``kkt_residual <= tol``. The gap is evaluated by a nonnegative residual
+    decomposition to avoid subtracting nearly equal objective values.
 
     For sparse clustering, ``centers`` are on centered data, ``offset`` is the
     removed feature mean, and ``feature_norms`` contains the column norms of
@@ -41,6 +45,10 @@ class StructuredResult:
     duals: dict
     offset: np.ndarray | None = None
     feature_norms: np.ndarray | None = None
+    # Appended defaults preserve the existing positional construction API.
+    dual_objective: float = float("nan")
+    gap: float = float("nan")
+    relative_gap: float = float("nan")
 
 
 def _data(X):
@@ -96,22 +104,52 @@ def _graph_term(name, B, radii, transpose=False):
 def _diagnostics(X, U, duals, terms):
     adjoint = np.zeros_like(U)
     objective = 0.5 * np.sum((U - X) ** 2)
+    dual_linear = 0.0
+    fenchel_gap = 0.0
     residual = 0.0
     for term in terms:
         Z = duals[term.name]
         differences = term.forward(U)
+        norm_Z = np.linalg.norm(Z, axis=1)
+        feasibility_slack = 32 * np.finfo(float).eps * term.radii
+        if np.any(norm_Z > term.radii + feasibility_slack):
+            raise ValueError("Structured dual variables are outside their feasible norm balls")
         adjoint += term.adjoint(Z)
-        objective += penalty_value(differences, term.radii, "l2")
+        group_penalties = term.radii * np.linalg.norm(differences, axis=1)
+        pairings = np.einsum("ij,ij->i", Z, differences)
+        slacks = group_penalties - pairings
+        # Feasibility makes each Fenchel slack nonnegative. Only cancellation
+        # at the scale of its own two terms may be rounded down to zero.
+        roundoff = 64 * np.finfo(float).eps * (group_penalties + np.abs(pairings))
+        if np.any(slacks < -roundoff):
+            raise ValueError("Negative structured Fenchel gap exceeds floating-point roundoff")
+        objective += np.sum(group_penalties)
+        fenchel_gap += np.sum(np.maximum(slacks, 0.0))
+        # <X,K*Z> = <KX,Z> avoids multiplying a large common data offset by
+        # adjoint entries whose sum only cancels after rounding.
+        dual_linear += np.einsum("ij,ij->", term.forward(X), Z)
         proximal_residual = Z - project_dual(Z + differences, term.radii)
         residual = max(
             residual,
             np.linalg.norm(proximal_residual)
             / (1 + np.linalg.norm(differences) + np.linalg.norm(Z)),
         )
-    stationarity = np.linalg.norm(U - X + adjoint) / (
+    stationarity_vector = U - X + adjoint
+    stationarity = np.linalg.norm(stationarity_vector) / (
         1 + np.linalg.norm(U - X) + np.linalg.norm(adjoint)
     )
-    return float(objective), float(max(stationarity, residual))
+    gap = 0.5 * np.sum(stationarity_vector**2) + fenchel_gap
+    dual_objective = dual_linear - 0.5 * np.sum(adjoint**2)
+    status = dict(
+        objective=float(objective),
+        dual_objective=float(dual_objective),
+        gap=float(gap),
+        relative_gap=float(gap / (1 + abs(objective) + abs(dual_objective))),
+        kkt_residual=float(max(stationarity, residual)),
+    )
+    if not all(np.isfinite(value) for value in status.values()):
+        raise ValueError("Numerical overflow in structured solve; rescale X and weights")
+    return status
 
 
 def _pdhg(X, terms, tol, max_iter):
@@ -122,13 +160,13 @@ def _pdhg(X, terms, tol, max_iter):
     extrapolated = U.copy()
     duals = {term.name: np.zeros_like(term.forward(U)) for term in terms}
     active = [term for term in terms if np.any(term.radii)]
-    objective, residual = _diagnostics(X, U, duals, terms)
-    history = [dict(iteration=0, objective=objective, kkt_residual=residual)]
+    status = _diagnostics(X, U, duals, terms)
+    history = [dict(iteration=0, **status)]
     bound = sum(term.norm_bound_squared for term in active)
     # tau * sigma * ||K||^2 < 1 for the vertically stacked operator K.
     step = 0.99 / np.sqrt(bound) if bound else 1.0
     for iteration in range(1, max_iter + 1):
-        if residual <= tol:
+        if max(status["kkt_residual"], status["relative_gap"]) <= tol:
             break
         adjoint = np.zeros_like(U)
         for term in active:
@@ -139,12 +177,15 @@ def _pdhg(X, terms, tol, max_iter):
         # prox_{tau f}(V), f(U) = 0.5 ||U-X||_F^2.
         U = (U - step * adjoint + step * X) / (1 + step)
         extrapolated = 2 * U - previous
-        objective, residual = _diagnostics(X, U, duals, terms)
-        if not np.isfinite(objective) or not np.isfinite(residual):
-            raise ValueError("Numerical overflow in structured solve; rescale X and weights")
-        history.append(dict(iteration=iteration, objective=objective, kkt_residual=residual))
+        status = _diagnostics(X, U, duals, terms)
+        history.append(dict(iteration=iteration, **status))
     return StructuredResult(
-        U, objective, residual, len(history) - 1, residual <= tol, history, duals
+        centers=U,
+        **status,
+        n_iter=len(history) - 1,
+        converged=max(status["kkt_residual"], status["relative_gap"]) <= tol,
+        history=history,
+        duals=duals,
     )
 
 
@@ -169,14 +210,14 @@ def solve_biclustering(
     gamma_row, gamma_col : float, default=1
         Finite nonnegative row and column fusion strengths.
     tol : float, default=1e-6
-        Maximum normalized KKT residual required for convergence.
+        Maximum relative primal-dual gap and normalized KKT residual.
     max_iter : int, default=10000
         Maximum PDHG iterations. Check ``result.converged`` after solving.
 
     Returns
     -------
     StructuredResult
-        Centers in the input coordinates, objective, KKT diagnostics and duals.
+        Centers in input coordinates, primal/dual objectives, gap, KKT and duals.
     """
     X = _data(X)
     Br, wr = graph_from_weights(row_weights, X.shape[0])
@@ -215,7 +256,7 @@ def solve_sparse(
     feature_weights : array-like of shape (n_features,), optional
         Finite nonnegative feature penalties, defaulting to ones.
     tol : float, default=1e-6
-        Maximum normalized KKT residual required for convergence.
+        Maximum relative primal-dual gap and normalized KKT residual.
     max_iter : int, default=10000
         Maximum PDHG iterations. Check ``result.converged`` after solving.
 

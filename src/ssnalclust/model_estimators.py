@@ -23,6 +23,9 @@ def _publish(estimator, result):
     estimator.cluster_centers_ = sums / counts[:, None]
     estimator.n_iter_ = result.n_iter
     estimator.objective_ = result.objective
+    if hasattr(result, "gap"):
+        estimator.dual_gap_ = result.gap
+        estimator.relative_dual_gap_ = result.relative_gap
     estimator.converged_ = result.converged
     if not result.converged:
         warnings.warn(
