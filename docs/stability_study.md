@@ -128,7 +128,10 @@ with observed native peak RSS 141.34–149.64 MiB. These times include preparati
 fitting and repeated compressed checkpoint writes; they are not isolated
 solver benchmarks. Measurements used macOS 26.5.1 arm64, Python 3.12.5, NumPy
 2.5.2, SciPy 1.18.1 and scikit-learn 1.9.0. Saved solver and harness/helper
-source hashes all matched the frozen implementation's files.
+source hashes all matched the frozen implementation's files. The first Windows
+CI run caught LF-to-CRLF conversion of the hashed protocol; its observed hash
+matched that transformation exactly. Protocol checkout rules now preserve LF
+bytes, and a simulated Windows checkout passed all eight provenance checks.
 
 Only three datasets per simulation family were studied, with matching seeds
 pairing random draws across scenarios. No confidence intervals assume
