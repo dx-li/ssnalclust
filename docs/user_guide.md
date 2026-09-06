@@ -378,6 +378,13 @@ set when the scientific question requires them, with graph and preprocessing
 construction restricted appropriately in each split. The returned masks make
 the actual held-out entries inspectable.
 
+The masked objective can have multiple optimal missing-value predictions.
+Scores evaluate the solver's deterministic initialization and observed-range
+box convention; a small objective gap does not bound missing-entry prediction
+error. Nonfinite predictions and unrepresentable MSEs raise before selection
+or refitting. Finite MSE calculation avoids intermediate sum-of-squares
+overflow when the mean itself remains representable.
+
 The [moons and circles recovery study](recovery_study.md) separates numerical
 convergence from recovery, reports every fixed-grid point, and documents
 centroid-label sensitivity on concentric components. Its best-over-grid

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Compute held-out MSE with scaled residuals, rejecting invalid scores before
+  selection or refitting, and clarify nonunique-imputation semantics.
+
 - Release obsolete warm-start buffers and prior yielded results in streamed
   paths before computing the next point, preserving mutation-safe snapshots.
   Measure native memory for streamed versus retained 8–256-point paths, with
