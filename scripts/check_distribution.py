@@ -91,6 +91,28 @@ for label, path in [
     for index, point in enumerate(path):
         certified(f"{label}_{index}", point, X.shape)
         assert point.history == []
+summary_clusters = []
+upstream = problem.iter_path([0., 1., 10.], tol=1e-7, store_history=False)
+summaries = sc.iter_path_summaries(upstream)
+try:
+    for summary in summaries:
+        assert summary["converged"]
+        assert summary["relative_gap"] <= 1e-7
+        assert summary["kkt_residual"] <= 1e-7
+        assert np.isfinite(summary["dual_objective"])
+        assert summary["gap"] >= 0.
+        assert summary["center_error_bound"] >= 0.
+        summary_clusters.append(summary["n_clusters"])
+        checks.append(dict(name=f"streamed_summary_{len(summary_clusters) - 1}",
+                           objective=float(summary["objective"]),
+                           relative_gap=float(summary["relative_gap"]),
+                           kkt_residual=float(summary["kkt_residual"])))
+        del summary
+finally:
+    summaries.close()
+    upstream.close()
+assert summary_clusters == [2, 2, 1]
+
 model = sc.ConvexClustering(weights=W, gamma=10., tol=1e-7).fit(X)
 assert_array_equal(model.labels_, [0, 0])
 assert model.n_clusters_ == 1

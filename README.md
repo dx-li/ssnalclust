@@ -110,7 +110,10 @@ use `store_history=False` to avoid retaining iteration histories. See
 [repeated_solves.py](examples/repeated_solves.py). The optional `check_every`
 parameter reduces diagnostic frequency; the final result is always checked. Every path
 point has its own convergence diagnostics. `summarize_path(path)` reports
-cluster counts, certificates, and numerical merge/split transitions. Arbitrary weighted convex
+cluster counts, certificates, and numerical merge/split transitions.
+`iter_path_summaries(stream)` yields those summaries one point at a time; see
+[streaming path inspection](docs/streaming_memory.md#inspecting-a-path-without-accumulating-summaries).
+Arbitrary weighted convex
 clustering paths can split; this package does not force a dendrogram or
 irreversibly compress fused clusters.
 

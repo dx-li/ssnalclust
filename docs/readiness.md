@@ -38,7 +38,10 @@ ledger, not a declaration of completion.
 - Reuse validated graphs and sparse factorizations across path points, and
   stream results for long paths. The [streaming memory study](streaming_memory.md)
   now measures 8–256-point paths with exact numerical parity, and fixes
-  obsolete warm-start/result retention. It covers one modest graph; repeats
+  obsolete warm-start/result retention. `iter_path_summaries` now consumes
+  cluster transitions and certificates without accumulating fits or labels;
+  lifetime regressions cover the wrapper, but that API was not included in
+  the recorded RSS study. The study covers one modest graph; repeats
   and larger or different graphs remain open. Further SSNAL work should follow measured
   Newton/CG costs; adaptive sieving needs full-problem verification and must
   allow previously removed edges to reactivate.
