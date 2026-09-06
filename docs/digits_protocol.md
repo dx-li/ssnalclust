@@ -11,7 +11,7 @@ Use the original UCI `optdigits.tes` cohort: 1,797 rows, 64 pixel features and
 a digit-label column. Keep row order and every feature; divide pixels by 16.
 The input SHA-256 is
 `6ebb3d2fee246a4e99363262ddf8a00a3c41bee6014c373ed9d9216ba7f651b8`.
-[Attribution and provenance](../examples/data/README.md) accompany the source
+[Attribution and provenance](path:../examples/data/README.md) accompany the source
 files. The original training cohort is not used.
 
 Fit the specified complete-data squared-fidelity, Euclidean-fusion objective
@@ -35,13 +35,16 @@ size. This example is not a large-scale nearest-neighbor memory benchmark.
 For each graph, set gamma to `median_distance / k` times
 `[0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10]` in that order. Solve a warm-started
 SSNAL path with tolerance `1e-6`, at most 300 outer iterations per point,
-diagnostic cadence one and numerical label tolerance `1e-4`. Every strength
+diagnostic cadence one and numerical label tolerance `1e-4`. Iteration
+histories are disabled; returned centers and per-point summaries are retained. Every strength
 has its own convergence flag, absolute/relative gap, KKT residual and global
 Frobenius centroid-error bound.
 
 Cross-check the predetermined grid positions 0, 4 and 8 with cold ADMM solves
 on exactly the same data and graph, tolerance `1e-6` and at most 10,000
-iterations. Record objective differences and feasible certificate intervals,
+iterations. Each ADMM check uses a fresh prepared problem, including its
+factorization; neither iterates nor factorizations are reused between checks.
+Record objective differences and feasible certificate intervals,
 actual centroid distances versus summed error bounds, and partition equality
 allowing relabeling. These compare two implementations in this library;
 they are not a new independent external optimizer or proof beyond the
