@@ -8,3 +8,6 @@ examples/data/*.names -text
 docs/**/*.json -text
 docs/**/*.jsonl -text
 docs/**/*.txt -text
+
+# Frozen protocols are hashed alongside their recorded experiment artifacts.
+docs/*protocol.md text eol=lf

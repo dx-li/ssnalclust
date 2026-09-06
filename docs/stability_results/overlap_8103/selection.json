@@ -1,0 +1,24 @@
+{
+  "selected_index": 5,
+  "selected_factor": 10.0,
+  "mean_scores": [
+    null,
+    null,
+    null,
+    null,
+    -0.4999031210786945,
+    -0.7845141205240236,
+    -0.6454997819956171
+  ],
+  "eligible": [
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true
+  ],
+  "no_selection_reason": null,
+  "status": "valid"
+}

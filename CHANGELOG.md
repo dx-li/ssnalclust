@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Evaluate corrected partition stability with a frozen simulation protocol,
+  independent saved-array audits and explicit degenerate/no-selection gates.
+  Preserve Gaussian-control and overlap failures instead of introducing an
+  unvalidated public selector.
+
 - Add lazy `iter_path_summaries` for cluster transitions and numerical
   certificates without retaining the full path. Preserve `summarize_path`
   as the list interface, now including available certificates.

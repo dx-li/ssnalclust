@@ -63,7 +63,10 @@ ledger, not a declaration of completion.
   [Wine entry-holdout study](wine_holdout.md) now also preserves a lower
   reconstruction tuning score whose selected full fit remains all singletons.
   Its training-only preprocessing and independent saved-dual audit strengthen
-  the workflow, while partition-specific selection remains unresolved. Robust model selection,
+  the workflow. A [corrected partition-stability study](stability_study.md)
+  now independently audits 783 fits, but still selects multiple groups on
+  single-Gaussian controls and shows variable overlap recovery. Tighter-tolerance
+  partition sensitivity, robust model selection,
   additional implementations and larger real datasets remain open.
 - Improve API coherence, error reporting, extension contracts and release
   documentation through actual workflows; avoid adding methods whose
