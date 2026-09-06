@@ -176,7 +176,13 @@ records. Complete worker artifacts are retained:
 | Draw 1731 | [JSON](wine_holdout/holdout_1731.json) | [NPZ](wine_holdout/holdout_1731.npz) | [Text](wine_holdout/holdout_1731.txt) |
 | Full data | [JSON](wine_holdout/full.json) | [NPZ](wine_holdout/full.npz) | [Text](wine_holdout/full.txt) |
 
-The current local suite passes 753 tests, with 59 focused tests also passing
+Comparing retained CI artifacts exposed automatic Windows line-ending
+conversion: Wine's numeric values were unchanged, but the source file hash
+differed. Git attributes now preserve original data and recorded evidence
+bytes and keep Python source line endings stable. Provenance regressions
+check the original UCI files and saved Wine, Digits and streaming artifacts.
+
+The current local suite passes 760 tests, with 59 focused tests also passing
 on minimum dependencies. Additional work remains on partition-specific
 selection methods, imputation-convention sensitivity, separate evaluation
 masks, broader datasets, and statistical uncertainty.

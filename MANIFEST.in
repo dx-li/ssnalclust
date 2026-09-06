@@ -1,3 +1,4 @@
+include .gitattributes
 include CITATION.cff CHANGELOG.md CONTRIBUTING.md
 recursive-include docs *.md *.json *.jsonl *.txt *.npz *.png *.rst *.py *.css
 recursive-include examples *.py *.R

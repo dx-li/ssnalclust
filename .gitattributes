@@ -1,0 +1,10 @@
+# Keep source fingerprints stable across operating systems.
+*.py text eol=lf
+
+# Preserve original data bytes and recorded artifact checksums at checkout.
+examples/data/*.data -text
+examples/data/*.tes -text
+examples/data/*.names -text
+docs/**/*.json -text
+docs/**/*.jsonl -text
+docs/**/*.txt -text
