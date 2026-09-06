@@ -31,7 +31,10 @@ ledger, not a declaration of completion.
   paper's much larger experiments. Track dimensionality, graph parameters,
   numerical-library threads, source hashes, and machine details. A subsequent
   [Newton study](newton_performance.md) now records convergence at 50k and
-  lower measured solve time at 5k/10k; larger and more varied cases remain.
+  lower measured solve time at 5k/10k. The
+  [high-dimensional study](high_dimensional.md) adds 32–512 features, materialized
+  paths and partial-fusion cases with graph/solution diagnostics. Broader
+  graph families, repeated measurements and real-data scales remain open.
 - Reuse validated graphs and sparse factorizations across path points, and
   stream results for long paths. Further SSNAL work should follow measured
   Newton/CG costs; adaptive sieving needs full-problem verification and must

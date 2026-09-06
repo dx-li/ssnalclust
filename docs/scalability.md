@@ -71,6 +71,11 @@ numerical packages are imported. They are not a measurement of effective
 thread counts. The worker is process-isolated, but other activity on the host,
 thermal state and filesystem caches are not controlled.
 
+The [high-dimensional study](high_dimensional.md) extends this protocol with
+explicit graph-weight, centroid-movement and direct-edge-fusion diagnostics.
+It includes a near-unregularized control to show why fixed bandwidth can
+produce misleadingly easy problems as feature count grows.
+
 ## Initial observations
 
 The first grid ran on macOS 26.5.1 arm64, Python 3.12.5, NumPy 2.5.2,
