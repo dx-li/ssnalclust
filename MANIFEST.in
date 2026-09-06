@@ -1,5 +1,5 @@
 include CITATION.cff CHANGELOG.md CONTRIBUTING.md
-recursive-include docs *.md *.json *.jsonl *.npz *.png *.rst *.py *.css
+recursive-include docs *.md *.json *.jsonl *.txt *.npz *.png *.rst *.py *.css
 recursive-include examples *.py *.R
 recursive-include .github *.yml *.md
 recursive-include scripts *.py

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Release obsolete warm-start buffers and prior yielded results in streamed
+  paths before computing the next point, preserving mutation-safe snapshots.
+
 - Add a frozen Optical Digits protocol, offline data with attribution, atomic
   checkpoints, retained full-data fits and cross-checks, and figures showing
   graph sensitivity and a silhouette selection failure.
